@@ -25,3 +25,4 @@ class User(AbstractUser):
     profile_picute = models.ImageField(upload_to="profiles/", blank=True, null=True)
     pace = models.CharField(max_length=1, choices=PACE)
 
+
