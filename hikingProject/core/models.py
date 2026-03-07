@@ -12,11 +12,11 @@ class User(AbstractUser):
     EXPERIENCE_LEVEL = [
         ("B", "Beginner"),
         ("I", "Intermediate"),
-        ("E", "Experienced"),
+        ("A", "Advanced"),
     ]
     PACE = [
         ("S", "Slow"), 
-        ("A", "Average"),
+        ("M", "Moderate"),
         ("F", "Fast"),
     ]
     name = models.CharField(max_length=100)
@@ -58,3 +58,58 @@ class Friendship(models.Model):
                 name="unique_friend_request",
             ),
         ]
+
+class HikingEvent(models.Model):
+
+    EXPERIENCE_LEVELS = [
+        ("beginner", "Beginner"),
+        ("intermediate", "Intermediate"),
+        ("advanced", "Advanced"),
+    ]
+
+    PACES = [
+        ("slow", "Slow"),
+        ("moderate", "Moderate"),
+        ("fast", "Fast"),
+    ]
+
+    VISIBILITY = [
+        ("public", "Public"),
+        ("friends", "Friends Only"),
+    ]
+
+    title = models.CharField(max_length=200)
+
+    organizer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="organized_hikes"
+    )
+
+    location = models.CharField(max_length=255)
+
+    date = models.DateField()
+    time = models.TimeField()
+
+    pace = models.CharField(max_length=20, choices=PACES)
+
+    recommended_experience = models.CharField(
+        max_length=20,
+        choices=EXPERIENCE_LEVELS
+    )
+
+    mileage = models.FloatField()
+
+    elevation_gain = models.IntegerField()
+
+    visibility = models.CharField(
+        max_length=10,
+        choices=VISIBILITY,
+        default="public"
+    )
+
+    description = models.TextField(blank=True)
+
+    max_participants = models.IntegerField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
