@@ -1,5 +1,5 @@
 """
-ASGI config for hackCU12 project.
+ASGI config for hikingProject project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'hackCU12.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'hikingProject.settings')
 
 application = get_asgi_application()

@@ -1,5 +1,5 @@
 """
-WSGI config for hackCU12 project.
+WSGI config for hikingProject project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'hackCU12.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'hikingProject.settings')
 
 application = get_wsgi_application()

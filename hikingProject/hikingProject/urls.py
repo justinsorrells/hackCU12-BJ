@@ -1,5 +1,5 @@
 """
-URL configuration for hackCU12 project.
+URL configuration for hikingProject project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/4.2/topics/http/urls/
@@ -18,6 +18,6 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path("", include("hikingApp.urls")),
+    path("", include("core.urls")),
     path('admin/', admin.site.urls),
 ]
