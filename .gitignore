@@ -28,6 +28,7 @@ staticfiles/
 # OS
 .DS_Store
 Thumbs.db
+Makefile
 
 # Python builds
 build/
