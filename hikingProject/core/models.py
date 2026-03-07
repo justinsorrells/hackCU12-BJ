@@ -1,7 +1,8 @@
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 # Create your models here.
-class User(models.Model):
+class User(AbstractUser):
     GENDER = [
         ("F", "Female"),
         ("M", "Male"),
@@ -21,6 +22,6 @@ class User(models.Model):
     location = models.CharField(max_length=100)    
     gender = models.CharField(max_length=1, choices=GENDER)
     experience_level = models.CharField(max_length=1, choices=EXPERIENCE_LEVEL)
+    profile_picute = models.ImageField(upload_to="profiles/", blank=True, null=True)
     pace = models.CharField(max_length=1, choices=PACE)
-
 
