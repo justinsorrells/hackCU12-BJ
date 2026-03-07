@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from django.conf import settings
 from django.db import models
 
 # Create your models here.
@@ -25,4 +26,35 @@ class User(AbstractUser):
     profile_picute = models.ImageField(upload_to="profiles/", blank=True, null=True)
     pace = models.CharField(max_length=1, choices=PACE)
 
+class Friendship(models.Model):
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("accepted", "Accepted"),
+        ("declined", "Declined"),
+        ("blocked", "Blocked"),
+    ]
 
+    requester = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="sent_friendships"
+    )
+    addressee = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="received_friendships"
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=~models.Q(requester=models.F("addressee")),
+                name="prevent_self_friendship",
+            ),
+            models.UniqueConstraint(
+                fields=["requester", "addressee"],
+                name="unique_friend_request",
+            ),
+        ]
