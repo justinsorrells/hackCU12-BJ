@@ -3,8 +3,6 @@
         <span class="eyebrow">Upcoming hike</span>
         {% if hike.organizer == user %}
             <span class="status-pill status-pill--good">Organizer</span>
-        {% else %}
-            <span class="status-pill status-pill--soft">Joined</span>
         {% endif %}
         <span class="status-pill status-pill--pending">{{ hike.get_visibility_display }}</span>
     </div>
