@@ -1,15 +1,19 @@
+import base64
+from django.utils import timezone
+from io import BytesIO
+
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+import qrcode
 from .models import *
 from .forms import *
 
 # Create your views here.
 @login_required
 def home(request):
-
     events = HikingEvent.objects.filter(
             Q(organizer=request.user) |
             Q(join_requests__user=request.user,
@@ -33,10 +37,32 @@ def register_view(request):
 def search_view(request):
     form = SearchForm(request.GET or None)
 
+    friendships = Friendship.objects.filter(
+        Q(requester=request.user, status="accepted") |
+        Q(addressee=request.user, status="accepted")
+    )
+
+    friend_ids = set()
+    for friendship in friendships:
+        if friendship.requester_id == request.user.id:
+            friend_ids.add(friendship.addressee_id)
+        else:
+            friend_ids.add(friendship.requester_id)
+            
+    hikes = HikingEvent.objects.filter(
+        Q(visibility="public") |
+        Q(visibility="friends", organizer_id__in=friend_ids) |
+        Q(organizer=request.user),
+        date__gte=timezone.now().date(),
+    ).order_by("date", "time").distinct()[:10]
+
+    users = User.objects.exclude(
+        Q(id=request.user.id) |
+        Q(id__in=friend_ids)
+    ).order_by("?")[:10]
+
     query = ""
     tab = "hikes"
-    hikes = HikingEvent.objects.none()
-    users = User.objects.none()
 
     if form.is_valid():
         query = form.cleaned_data.get("q", "")
@@ -99,6 +125,13 @@ def edit_hike(request, hike_id):
 @login_required
 def detail_hike(request, hike_id):
     hike = get_object_or_404(HikingEvent, id=hike_id)
+
+    url = request.build_absolute_uri(f"/hikes/{hike.id}/")
+    qr = qrcode.make(url)
+    buffer = BytesIO()
+    qr.save(buffer, format="PNG")
+    qr_base64 = base64.b64encode(buffer.getvalue()).decode()
+
     has_pending_request = False
     has_been_rejected = False
     is_participant = False
@@ -117,7 +150,7 @@ def detail_hike(request, hike_id):
             user=request.user,
             status="rejected",
             ).exists()
-    return render(request, "detail_hike.html", {"hike": hike, "has_pending_request": has_pending_request, "is_participant": is_participant, "has_been_rejected": has_been_rejected})
+    return render(request, "detail_hike.html", {"hike": hike, "has_pending_request": has_pending_request, "is_participant": is_participant, "has_been_rejected": has_been_rejected, "qr_code": qr_base64})
 
 @login_required
 def edit_profile(request):
@@ -301,3 +334,78 @@ def remove_friend(request, user_id):
     if friendship:
         friendship.delete()
     return redirect("detail_user", user_id=user_id)
+
+@login_required
+def send_friend_request(request, user_id):
+    if request.method != "POST":
+        return redirect("detail_user", user_id=user_id)
+    other_user = get_object_or_404(User, id=user_id)
+    if other_user == request.user:
+        return redirect("detail_user", user_id=user_id)
+    existing_friendship = Friendship.objects.filter(
+            Q(requester=request.user, addressee=other_user) |
+            Q(requester=other_user, addressee=request.user)
+            ).first()
+    if existing_friendship is None:
+        Friendship.objects.create(
+                requester=request.user,
+                addressee=other_user,
+                status="pending",
+                )
+    return redirect("detail_user", user_id=user_id)
+
+@login_required
+def accept_friend_request(request, friendship_id):
+    if request.method != "POST":
+        return redirect("detail_user", user_id=request.user.id)
+
+    friendship = get_object_or_404(
+            Friendship,
+            id=friendship_id,
+            addressee=request.user,
+            status="pending",
+            )
+
+    friendship.status = "accepted"
+    friendship.save()
+    return redirect("detail_user", user_id=request.user.id)
+
+@login_required
+def decline_friend_request(request, friendship_id):
+    if request.method != "POST":
+        return redirect("detail_user", user_id=request.user.id)
+
+    friendship = get_object_or_404(
+            Friendship,
+            id=friendship_id,
+            addressee=request.user,
+            status="pending",
+            )
+    friendship.status = "declined"
+    friendship.save()
+    return redirect("detail_user", user_id=request.user.id)
+
+@login_required
+def remove_friend(request, user_id):
+    if request.method != "POST":
+        return redirect("detail_user", user_id=user_id)
+    other_user = get_object_or_404(User, id=user_id)
+    friendship = Friendship.objects.filter(
+            Q(requester=request.user, addressee=other_user) |
+            Q(requester=other_user, addressee=request.user),
+            status="accepted",
+            ).first()
+
+    if friendship:
+        friendship.delete()
+    return redirect("detail_user", user_id=user_id)
+
+@login_required
+def delete_hike(request, hike_id):
+    hike = get_object_or_404(HikingEvent, id=hike_id)
+    if hike.organizer != request.user:
+        return redirect("detail_hike", hike_id=hike.id)
+    if request.method == "POST":
+        hike.delete()
+        return redirect("home")
+    return redirect("detail_hike", hike_id=hike_id)
