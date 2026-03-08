@@ -29,7 +29,6 @@ class Friendship(models.Model):
     STATUS_CHOICES = [
         ("pending", "Pending"),
         ("accepted", "Accepted"),
-        ("declined", "Declined"),
         ("blocked", "Blocked"),
     ]
 

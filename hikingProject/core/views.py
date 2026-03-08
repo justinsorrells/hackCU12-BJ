@@ -411,8 +411,7 @@ def decline_friend_request(request, friendship_id):
             addressee=request.user,
             status="pending",
             )
-    friendship.status = "declined"
-    friendship.save()
+    friendship.delete()
     return redirect("detail_user", user_id=request.user.id)
 
 @login_required
