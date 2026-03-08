@@ -208,7 +208,7 @@ def edit_hike(request, hike_id):
 def detail_hike(request, hike_id):
     hike = get_object_or_404(HikingEvent, id=hike_id)
 
-    url = request.build_absolute_uri(f"/hikes/{hike.id}/")
+    url = request.build_absolute_uri(f"/hike/{hike.id}/")
     qr = qrcode.make(url)
     buffer = BytesIO()
     qr.save(buffer, format="PNG")
