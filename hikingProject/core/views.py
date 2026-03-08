@@ -437,7 +437,7 @@ def delete_hike(request, hike_id):
     if request.method == "POST":
         hike.delete()
         return redirect("home")
-    return redirect("detail_hike", hike_id=hike_id)
+    return redirect("detail_hike", hike_id=hike.id)
 
 @login_required
 def report_user(request, user_id):

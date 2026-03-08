@@ -23,7 +23,7 @@ urlpatterns = [
     path("friends/accept/<int:friendship_id>/", views.accept_friend_request, name="accept_friend_request"),
     path("friends/decline/<int:friendship_id>/", views.decline_friend_request, name="decline_friend_request"),
     path("friends/remove/<int:user_id>/", views.remove_friend, name="remove_friend"),
-    path("delete_hike/<int:hike_id>/", views.delete_hike, name="delete_hike"),
     path("user/<int:user_id>/report/", views.report_user, name="report_user"),
     path("hike/<int:hike_id>/leave/", views.leave_hike, name="leave_hike"),
+    path("hike/<int:hike_id>/delete", views.delete_hike, name="delete_hike"),
 ]
