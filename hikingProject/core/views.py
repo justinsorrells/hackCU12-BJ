@@ -154,6 +154,20 @@ def detail_hike(request, hike_id):
     return render(request, "detail_hike.html", {"hike": hike, "has_pending_request": has_pending_request, "is_participant": is_participant, "has_been_rejected": has_been_rejected, "qr_code": qr_base64})
 
 @login_required
+def leave_hike(request, hike_id):
+    hike = get_object_or_404(HikingEvent, id=hike_id)
+    if hike.organizer == request.user:
+        return redirect("detail_hike", hike_id=hike.id)
+    join_request = EventJoinRequest.objects.filter(
+            event=hike,
+            user=request.user,
+            status="approved",
+            ).first()
+    if join_request:
+        join_request.delete()
+    return redirect("detail_hike", hike_id=hike.id)
+
+@login_required
 def edit_profile(request):
     if request.method == "POST":
         form = EditProfileForm(request.POST, request.FILES, instance=request.user)

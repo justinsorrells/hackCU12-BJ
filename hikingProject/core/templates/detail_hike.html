@@ -14,6 +14,12 @@ Home
 		<button type="submit">Request to Join</button>
 	    </form>
 	{% endif %}
+	{% if user != hike.organizer and is_participant %}
+	    <form method="post" action="{% url 'leave_hike' hike.id %}">
+		{% csrf_token %}
+		<button type="submit">Leave Hike</button>
+	    </form>
+	{% endif %}
 	{% if request.user == hike.organizer %}
 	    <h2>Pending Join Requests</h2>
 	    {% for join_request in hike.join_requests.all %}
