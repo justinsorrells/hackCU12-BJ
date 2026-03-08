@@ -10,7 +10,7 @@
             <p class="section-subtitle">Private trip chat.</p>
 
             {% if thread_messages %}
-                <div class="thread-stream">
+                <div class="thread-stream" style="max-height: 400px; overflow-y: auto; padding-right: 10px;">
                     {% for message in thread_messages %}
                         <div class="thread-message {% if message.user == request.user %}thread-message--self{% endif %}">
                             <div class="thread-bubble">
