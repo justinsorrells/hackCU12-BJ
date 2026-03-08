@@ -14,6 +14,12 @@ Profile
             <button type="submit">Add Friend</button>
         </form>
     {% endif %}
+    {% if not is_profile and is_friend %}
+	<form method="post" action="{% url 'remove_friend' profile_user.id %}">
+            {% csrf_token %}
+            <button type="submit">Remove Friend</button>
+        </form>
+    {% endif %}
 	{% if is_profile %}
 	    <h2>Incoming Friend Requests</h2>
 	    {% for friendship in incoming_requests %}
