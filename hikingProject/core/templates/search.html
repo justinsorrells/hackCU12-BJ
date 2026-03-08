@@ -59,7 +59,8 @@
             <div class="result">
                 <strong>{{ hike.title }}</strong><br>
                 {{ hike.location }}<br>
-                {{ hike.date }} at {{ hike.time }}
+                {{ hike.date }} at {{ hike.time }}<br>
+		<a href="{% url 'detail_hike' hike.id%}">Hike Details</a>
             </div>
         {% empty %}
             <p>No hikes found.</p>

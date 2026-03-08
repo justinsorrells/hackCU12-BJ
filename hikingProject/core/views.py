@@ -91,7 +91,7 @@ def edit_hike(request, hike_id):
             updated_hike = form.save(commit=False)
             updated_hike.organizer = request.user
             updated_hike.save()
-            return redirect("home")
+            return redirect("detail_hike", hike_id=hike_id)
     else:
         form = HikingEventForm(instance=hike)
 
@@ -99,3 +99,8 @@ def edit_hike(request, hike_id):
         "form": form,
         "hike": hike,
         })
+
+@login_required
+def detail_hike(request, hike_id):
+    hike = get_object_or_404(HikingEvent, id=hike_id)
+    return render(request, "detail_hike.html", {"hike": hike})

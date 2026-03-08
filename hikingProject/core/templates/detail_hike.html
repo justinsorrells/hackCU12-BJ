@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}
+Home
+{% endblock %}
+
+{% block content %}
+
+	<h2>Upcoming Hikes</h2>
+	<h1>{{ hike.title }}</h1>
+
+	<p><strong>Organizer:</strong> {{ hike.organizer.username }}</p>
+	<p><strong>Location:</strong> {{ hike.location }}</p>
+	<p><strong>Date:</strong> {{ hike.date }}</p>
+	<p><strong>Time:</strong> {{ hike.time }}</p>
+	<p><strong>Pace:</strong> {{ hike.get_pace_display }}</p>
+	<p><strong>Experience:</strong> {{ hike.get_recommended_experience_display }}</p>
+	<p><strong>Mileage:</strong> {{ hike.mileage }}</p>
+	<p><strong>Elevation Gain:</strong> {{ hike.elevation_gain }} ft</p>
+	<p><strong>Visibility:</strong> {{ hike.get_visibility_display }}</p>
+
+	{% if hike.description %}
+		<p><strong>Description:</strong> {{ hike.description }}</p>
+	{% endif %}
+
+	{% if hike.max_participants %}
+		<p><strong>Max Participants:</strong> {{ hike.max_participants }}</p>
+	{% endif %}
+
+	{% if request.user == hike.organizer %}
+		<a href="{% url 'edit_hike' hike.id %}">Edit hike</a>
+	{% endif %}
+{% endblock %}

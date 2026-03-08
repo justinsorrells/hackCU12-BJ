@@ -13,9 +13,7 @@ Home
         {% for event in events %}
             <li>
                 <strong>{{ event.title }}</strong><br>
-		{% if request.user == event.organizer %}
-		    <a href="{% url 'edit_hike' event.id %}">Edit hike</a>
-		{% endif %}
+	    	<a href="{% url 'detail_hike' event.id %}">Hike Details</a>
                 Location: {{ event.location }}<br>
                 Date: {{ event.date }} {{ event.time }}<br>
                 Pace: {{ event.pace }}<br>
