@@ -8,7 +8,9 @@ Notifications
 {% for notification in notifications %}
     <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;">
         <p>{{ notification.message }}</p>
-        {% if notification.hike %}
+	{% if notification.notification_type == "hike_message" %}
+		<a href="{% url 'hike_thread' notification.hike.id %}">View message</a>
+        {% elif notification.hike %}
             <a href="{% url 'detail_hike' notification.hike.id %}">View hike</a>
         {% endif %}
         <small>{{ notification.created_at }}</small>

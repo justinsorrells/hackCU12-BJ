@@ -600,6 +600,7 @@ def hike_thread(request, hike_id):
             hike=hike,
             is_read=False,
             message=f"You have unread messages in '{hike.title}'.",
+            notification_type = "hike_message",
             ).update(is_read=True)
     messages = hike.messages.select_related("user").order_by("created_at")
     if request.method == "POST":
@@ -633,6 +634,7 @@ def hike_thread(request, hike_id):
                             recipient=recipient,
                             hike=hike,
                             message=f"You have unread messages in '{hike.title}'.",
+                            notification_type = "hike_message",
                             )
 
             return redirect("hike_thread", hike_id=hike.id)
