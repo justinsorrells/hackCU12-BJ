@@ -139,7 +139,7 @@ def search_view(request):
                 users = users.filter(experience_level=user_experience)
 
             if user_pace:
-                users = users.filter(preferred_pace=user_pace)
+                users = users.filter(pace=user_pace)
 
             users = users[:10]
 
