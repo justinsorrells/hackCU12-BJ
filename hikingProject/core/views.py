@@ -28,3 +28,19 @@ def register_view(request):
     else:
         form = RegisterForm()
     return render(request, "registration/register.html", {"form": form})
+
+def search_hikes_view(request):
+    query = request.GET.get("q", "")
+    hikes = HikingEvent.objects.filter(
+        Q(location__icontains=query) |
+        Q(description__icontains=query)
+    ).distinct()
+    return render(request, "search_results.html", {"hikes": hikes, "query": query})
+
+def search_friends_view(request):
+    query = request.GET.get("q", "")
+    friends = request.user.friends.filter(
+        Q(username__icontains=query) |
+        Q(location__icontains=query)
+    ).distinct()
+    return render(request, "friend_search_results.html", {"friends": friends, "query": query})
