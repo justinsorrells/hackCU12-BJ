@@ -18,9 +18,9 @@
             {% endif %}
 
             <div class="tag-row">
-                <span class="status-pill">{{ hike.get_pace_display }}</span>
-                <span class="status-pill status-pill--pending">{{ hike.get_recommended_experience_display }}</span>
-                <span class="status-pill status-pill--soft">{{ hike.get_visibility_display }}</span>
+                <span class="status-pill" style="color: white; background: rgba(255, 255, 255, 0.15);">{{ hike.get_pace_display }}</span>
+                <span class="status-pill status-pill--pending" style="color: #e0f2f4; background: rgba(175, 221, 229, 0.25);">{{ hike.get_recommended_experience_display }}</span>
+                <span class="status-pill status-pill--soft" style="color: var(--sand-100); background: rgba(2, 73, 80, 0.25);">{{ hike.get_visibility_display }}</span>
             </div>
 
             <div class="detail-stat-grid">
