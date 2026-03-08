@@ -731,6 +731,13 @@ def approve_carpool_request(request, request_id):
 
     carpool_request.status = "approved"
     carpool_request.save()
+    Notification.objects.create(
+        recipient=carpool_request.rider,
+        sender=request.user,
+        hike=carpool_request.carpool_offer.event,
+        notification_type="hike_message",  # or add "carpool_approved" if you want a new type
+        message=f"Your carpool request for '{carpool_request.carpool_offer.event.title}' was approved.",
+    )
     return redirect("view_carpool_offers", hike_id=carpool_request.carpool_offer.event.id)
 
 @login_required
@@ -738,6 +745,14 @@ def reject_carpool_request(request, request_id):
     carpool_request = get_object_or_404(CarpoolRequest, id=request_id)
     if carpool_request.carpool_offer.driver != request.user:
         return redirect("view_carpool_offers", hike_id=carpool_request.carpool_offer.event.id)
+
+    Notification.objects.create(
+        recipient=carpool_request.rider,
+        sender=request.user,
+        hike=carpool_request.carpool_offer.event,
+        notification_type="hike_message",  # or use a new type like "carpool_rejected"
+        message=f"Your carpool request for '{carpool_request.carpool_offer.event.title}' was rejected.",
+    )
 
     carpool_request.delete()
     return redirect("view_carpool_offers", hike_id=carpool_request.carpool_offer.event.id)
@@ -754,6 +769,22 @@ def edit_carpool_offer(request, offer_id):
         form = CarpoolOfferForm(request.POST, instance=offer)
         if form.is_valid():
             form.save()
+            riders = User.objects.filter(
+                carpool_requests__carpool_offer=offer,
+                carpool_requests__status="approved",
+            ).exclude(id=request.user.id)
+
+            notifications = [
+                Notification(
+                    recipient=rider,
+                    sender=request.user,
+                    hike=hike,
+                    notification_type="carpool_approved",
+                    message=f"{request.user.username} updated the carpool for '{hike.title}'.",
+                )
+                for rider in riders
+            ]
+            Notification.objects.bulk_create(notifications)
             return redirect("view_carpool_offers", hike_id=hike.id)
     else:
         form = CarpoolOfferForm(instance=offer)
@@ -778,6 +809,13 @@ def leave_carpool(request, offer_id):
     ).first()
 
     if carpool_request:
+        Notification.objects.create(
+            recipient=offer.driver,
+            sender=request.user,
+            hike=offer.event,
+            notification_type="carpool_request",
+            message=f"{request.user.username} left your carpool for '{offer.event.title}'.",
+        )
         carpool_request.delete()
 
     return redirect("view_carpool_offers", hike_id=offer.event.id)
