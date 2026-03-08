@@ -12,4 +12,5 @@ urlpatterns = [
     path("hike/<int:hike_id>/edit/", views.edit_hike, name="edit_hike"), 
     path("hike/<int:hike_id>/", views.detail_hike, name="detail_hike"),
     path("search/", views.search_view, name="search"),
+    path("edit_profile/", views.edit_profile, name="edit_profile"),
 ]

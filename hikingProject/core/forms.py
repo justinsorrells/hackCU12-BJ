@@ -103,3 +103,15 @@ class SearchForm(forms.Form):
         required=False,
         widget=forms.HiddenInput()
     )
+
+class EditProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = (
+            "name",
+            "location",
+            "gender",
+            "experience_level",
+            "profile_picture",
+            "pace",
+        )
