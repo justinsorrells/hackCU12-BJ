@@ -1,6 +1,6 @@
 import base64
+from django.utils import timezone
 from io import BytesIO
-from urllib import request
 
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
@@ -37,10 +37,32 @@ def register_view(request):
 def search_view(request):
     form = SearchForm(request.GET or None)
 
+    friendships = Friendship.objects.filter(
+        Q(requester=request.user, status="accepted") |
+        Q(addressee=request.user, status="accepted")
+    )
+
+    friend_ids = set()
+    for friendship in friendships:
+        if friendship.requester_id == request.user.id:
+            friend_ids.add(friendship.addressee_id)
+        else:
+            friend_ids.add(friendship.requester_id)
+            
+    hikes = HikingEvent.objects.filter(
+        Q(visibility="public") |
+        Q(visibility="friends", organizer_id__in=friend_ids) |
+        Q(organizer=request.user),
+        date__gte=timezone.now().date(),
+    ).order_by("date", "time").distinct()[:10]
+
+    users = User.objects.exclude(
+        Q(id=request.user.id) |
+        Q(id__in=friend_ids)
+    ).order_by("?")[:10]
+
     query = ""
     tab = "hikes"
-    hikes = HikingEvent.objects.none()
-    users = User.objects.none()
 
     if form.is_valid():
         query = form.cleaned_data.get("q", "")
