@@ -1,6 +1,6 @@
 # PeakPals (HackCU12)
 
-TrailCircle is a Django web app for organizing hikes, connecting with friends, managing join requests, and coordinating carpools.
+PeakPals is a monolithic Django web app for organizing hikes and connecting with other likeminded hikers.
 
 ## Features
 
