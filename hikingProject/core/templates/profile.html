@@ -12,7 +12,7 @@
                 <img class="profile-photo" src="{{ user.profile_picture.url }}" alt="Profile Photo">
             {% else %}
                 <div class="profile-photo placeholder">
-                    {{ user.username|slice:":1"|upper }}
+                    {{ user.name }}
                 </div>
             {% endif %}
 
