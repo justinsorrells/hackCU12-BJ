@@ -14,6 +14,7 @@ class HikingEventForm(forms.ModelForm):
         fields = [
                 "title",
                 "location",
+                "gpx_file",
                 "date",
                 "time",
                 "pace",
@@ -30,6 +31,9 @@ class HikingEventForm(forms.ModelForm):
                     }),
                 "location": forms.TextInput(attrs={
                     "placeholder": "Enter location"
+                    }),
+                "gpx_file": forms.ClearableFileInput(attrs={
+                    "accept": ".gpx"
                     }),
                 "date": forms.DateInput(attrs={
                     "type": "date"

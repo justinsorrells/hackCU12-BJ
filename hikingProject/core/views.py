@@ -92,7 +92,7 @@ def search_view(request):
 @login_required
 def create_event(request):
     if request.method == "POST":
-        form = HikingEventForm(request.POST)
+        form = HikingEventForm(request.POST, request.FILES)
         if form.is_valid():
             event = form.save(commit=False)
             event.organizer = request.user
@@ -108,7 +108,7 @@ def edit_hike(request, hike_id):
     if hike.organizer != request.user:
         return HttpResponseForbidden("You are not allowed to edit this hike.")
     if request.method == "POST":
-        form = HikingEventForm(request.POST, instance=hike)
+        form = HikingEventForm(request.POST, request.FILES, instance=hike)
         if form.is_valid():
             updated_hike = form.save(commit=False)
             updated_hike.organizer = request.user

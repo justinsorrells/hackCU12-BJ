@@ -86,6 +86,7 @@ class HikingEvent(models.Model):
     )
 
     location = models.CharField(max_length=255)
+    gpx_file = models.FileField(upload_to="gpx/", blank=True, null=True)
 
     date = models.DateField()
     time = models.TimeField()
