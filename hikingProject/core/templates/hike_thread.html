@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+<h1>{{ hike.title }} Discussion</h1>
+
+<p>
+    <a href="{% url 'detail_hike' hike.id %}">Back to hike</a>
+</p>
+
+<div>
+    {% for message in messages %}
+        <div style="margin-bottom: 1rem; padding: 0.5rem; border: 1px solid #ccc;">
+            <strong>{{ message.user.username }}</strong>
+            <small>{{ message.created_at }}</small>
+            <p>{{ message.content }}</p>
+        </div>
+    {% empty %}
+        <p>No messages yet.</p>
+    {% endfor %}
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Send</button>
+</form>
+{% endblock %}

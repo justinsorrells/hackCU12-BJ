@@ -34,23 +34,14 @@ def register_view(request):
         form = RegisterForm()
     return render(request, "registration/register.html", {"form": form})
 
-from django.contrib.auth.decorators import login_required
-from django.db.models import Q
-from django.shortcuts import render
-from django.utils import timezone
-
-from .forms import SearchForm
-from .models import Friendship, HikingEvent, User
-
-
 @login_required
 def search_view(request):
     form = SearchForm(request.GET or None)
 
     friendships = Friendship.objects.filter(
-        Q(requester=request.user, status="accepted") |
-        Q(addressee=request.user, status="accepted")
-    )
+            Q(requester=request.user, status="accepted") |
+            Q(addressee=request.user, status="accepted")
+            )
 
     friend_ids = set()
     for friendship in friendships:
@@ -71,18 +62,18 @@ def search_view(request):
 
         if tab == "hikes":
             hikes = HikingEvent.objects.filter(
-                Q(visibility="public") |
-                Q(visibility="friends", organizer_id__in=friend_ids) |
-                Q(organizer=request.user),
-                date__gte=timezone.now().date(),
-            ).order_by("date", "time").distinct()
+                    Q(visibility="public") |
+                    Q(visibility="friends", organizer_id__in=friend_ids) |
+                    Q(organizer=request.user),
+                    date__gte=timezone.now().date(),
+                    ).order_by("date", "time").distinct()
 
             if query:
                 hikes = hikes.filter(
-                    Q(location__icontains=query) |
-                    Q(description__icontains=query) |
-                    Q(title__icontains=query)
-                )
+                        Q(location__icontains=query) |
+                        Q(description__icontains=query) |
+                        Q(title__icontains=query)
+                        )
 
             pace = form.cleaned_data.get("pace")
             experience = form.cleaned_data.get("experience")
@@ -105,16 +96,16 @@ def search_view(request):
 
         else:
             users = User.objects.exclude(
-                Q(id=request.user.id) |
-                Q(id__in=friend_ids)
-            ).distinct()
+                    Q(id=request.user.id) |
+                    Q(id__in=friend_ids)
+                    ).distinct()
 
             if query:
                 users = users.filter(
-                    Q(username__icontains=query) |
-                    Q(name__icontains=query) |
-                    Q(location__icontains=query)
-                )
+                        Q(username__icontains=query) |
+                        Q(name__icontains=query) |
+                        Q(location__icontains=query)
+                        )
 
             location = form.cleaned_data.get("location")
             gender = form.cleaned_data.get("gender")
@@ -145,16 +136,16 @@ def search_view(request):
 
     else:
         hikes = HikingEvent.objects.filter(
-            Q(visibility="public") |
-            Q(visibility="friends", organizer_id__in=friend_ids) |
-            Q(organizer=request.user),
-            date__gte=timezone.now().date(),
-        ).order_by("date", "time").distinct()[:10]
+                Q(visibility="public") |
+                Q(visibility="friends", organizer_id__in=friend_ids) |
+                Q(organizer=request.user),
+                date__gte=timezone.now().date(),
+                ).order_by("date", "time").distinct()[:10]
 
         users = User.objects.exclude(
-            Q(id=request.user.id) |
-            Q(id__in=friend_ids)
-        ).distinct()[:10]
+                Q(id=request.user.id) |
+                Q(id__in=friend_ids)
+                ).distinct()[:10]
 
     return render(request, "search.html", {
         "form": form,
@@ -162,7 +153,7 @@ def search_view(request):
         "tab": tab,
         "hikes": hikes,
         "users": users,
-    })
+        })
 
 @login_required
 def create_event(request):
@@ -188,6 +179,22 @@ def edit_hike(request, hike_id):
             updated_hike = form.save(commit=False)
             updated_hike.organizer = request.user
             updated_hike.save()
+
+            participants = User.objects.filter(
+                    event_join_requests__event=hike,
+                    event_join_requests__status="approved",
+                    ).exclude(id=request.user.id)
+
+            notifications = [
+                    Notification(
+                        recipient=participant,
+                        sender=hike.organizer,
+                        hike=hike,
+                        message=f"{request.user.username} updated the hike '{hike.title}'.",
+                        )
+                    for participant in participants
+                    ]
+            Notification.objects.bulk_create(notifications)
             return redirect("detail_hike", hike_id=hike_id)
     else:
         form = HikingEventForm(instance=hike)
@@ -210,6 +217,15 @@ def detail_hike(request, hike_id):
     has_pending_request = False
     has_been_rejected = False
     is_participant = False
+    can_view_thread = False
+    can_view_thread = (
+            request.user == hike.organizer or
+            EventJoinRequest.objects.filter(
+                event=hike,
+                user=request.user,
+                status="approved"
+                ).exists()
+            )
     has_pending_request = EventJoinRequest.objects.filter(
             event=hike,
             user=request.user,
@@ -226,10 +242,10 @@ def detail_hike(request, hike_id):
             status="rejected",
             ).exists()
     accepted_users = User.objects.filter(
-        event_join_requests__event=hike,
-        event_join_requests__status="approved",
-    )
-    return render(request, "detail_hike.html", {"accepted_users": accepted_users, "hike": hike, "has_pending_request": has_pending_request, "is_participant": is_participant, "has_been_rejected": has_been_rejected, "qr_code": qr_base64})
+            event_join_requests__event=hike,
+            event_join_requests__status="approved",
+            )
+    return render(request, "detail_hike.html", {"can_view_thread": can_view_thread, "accepted_users": accepted_users, "hike": hike, "has_pending_request": has_pending_request, "is_participant": is_participant, "has_been_rejected": has_been_rejected, "qr_code": qr_base64})
 
 @login_required
 def leave_hike(request, hike_id):
@@ -243,6 +259,10 @@ def leave_hike(request, hike_id):
             ).first()
     if join_request:
         join_request.delete()
+        Notification.objects.create(
+                recipient=hike.organizer,
+                message=f"{request.user.username} left your hike '{hike.title}'.",
+                )
     return redirect("detail_hike", hike_id=hike.id)
 
 @login_required
@@ -269,6 +289,13 @@ def request_to_join_hike(request, hike_id):
             user=request.user,
             defaults={"status": "pending"}
             )
+    if created:
+        Notification.objects.create(
+                recipient=hike.organizer,
+                sender=request.user,
+                hike=hike,
+                message=f"{request.user.username} requested to join your hike '{hike.title}'.",
+                )
     return redirect("detail_hike", hike_id=hike.id)
 
 @login_required
@@ -278,6 +305,12 @@ def approve_join_request(request, request_id):
         return redirect("detail_hike", join_request.event.id)
     join_request.status = "approved"
     join_request.save()
+    Notification.objects.create(
+            recipient=join_request.user,
+            sender=request.user,
+            hike=join_request.event,
+            message=f"You were approved to join '{join_request.event.title}'.",
+            )
     return redirect("detail_hike", hike_id=join_request.event.id)
 
 @login_required
@@ -289,7 +322,12 @@ def reject_join_request(request, request_id):
 
     join_request.status = "rejected"
     join_request.save()
-
+    Notification.objects.create(
+            recipient=join_request.user,
+            sender=request.user,
+            hike=join_request.event,
+            message=f"Your request to join '{join_request.event.title}' was rejected.",
+            )
     return redirect("detail_hike", hike_id=join_request.event.id)
 
 @login_required
@@ -318,9 +356,9 @@ def detail_user(request, user_id):
                 status="pending",
                 ).exists()
         my_friendships = Friendship.objects.filter(
-            Q(requester=request.user) | Q(addressee=request.user),
-            status="accepted",
-        )
+                Q(requester=request.user) | Q(addressee=request.user),
+                status="accepted",
+                )
         my_friend_ids = set()
         for friendship in my_friendships:
             if friendship.requester_id == request.user.id:
@@ -329,9 +367,9 @@ def detail_user(request, user_id):
                 my_friend_ids.add(friendship.requester_id)
         # friends of profile user
         profile_friendships = Friendship.objects.filter(
-            Q(requester=user) | Q(addressee=user),
-            status="accepted",
-        )
+                Q(requester=user) | Q(addressee=user),
+                status="accepted",
+                )
 
         profile_friend_ids = set()
         for friendship in profile_friendships:
@@ -396,23 +434,12 @@ def send_friend_request(request, user_id):
                 addressee=other_user,
                 status="pending",
                 )
+        Notification.objects.create(
+                recipient=other_user,
+                sender=request.user,
+                message=f"{request.user.username} sent you a friend request.",
+                )
     return redirect("detail_user", user_id=user_id)
-
-@login_required
-def accept_friend_request(request, friendship_id):
-    if request.method != "POST":
-        return redirect("detail_user", user_id=request.user.id)
-
-    friendship = get_object_or_404(
-            Friendship,
-            id=friendship_id,
-            addressee=request.user,
-            status="pending",
-            )
-
-    friendship.status = "accepted"
-    friendship.save()
-    return redirect("detail_user", user_id=request.user.id)
 
 @login_required
 def decline_friend_request(request, friendship_id):
@@ -444,24 +471,6 @@ def remove_friend(request, user_id):
         friendship.delete()
     return redirect("detail_user", user_id=user_id)
 
-@login_required
-def send_friend_request(request, user_id):
-    if request.method != "POST":
-        return redirect("detail_user", user_id=user_id)
-    other_user = get_object_or_404(User, id=user_id)
-    if other_user == request.user:
-        return redirect("detail_user", user_id=user_id)
-    existing_friendship = Friendship.objects.filter(
-            Q(requester=request.user, addressee=other_user) |
-            Q(requester=other_user, addressee=request.user)
-            ).first()
-    if existing_friendship is None:
-        Friendship.objects.create(
-                requester=request.user,
-                addressee=other_user,
-                status="pending",
-                )
-    return redirect("detail_user", user_id=user_id)
 
 @login_required
 def accept_friend_request(request, friendship_id):
@@ -477,36 +486,13 @@ def accept_friend_request(request, friendship_id):
 
     friendship.status = "accepted"
     friendship.save()
-    return redirect("detail_user", user_id=request.user.id)
-
-@login_required
-def decline_friend_request(request, friendship_id):
-    if request.method != "POST":
-        return redirect("detail_user", user_id=request.user.id)
-
-    friendship = get_object_or_404(
-            Friendship,
-            id=friendship_id,
-            addressee=request.user,
-            status="pending",
+    Notification.objects.create(
+            recipient=friendship.requester,
+            sender=request.user,
+            message=f"{request.user.username} accepted your friend request.",
             )
-    friendship.delete()
     return redirect("detail_user", user_id=request.user.id)
 
-@login_required
-def remove_friend(request, user_id):
-    if request.method != "POST":
-        return redirect("detail_user", user_id=user_id)
-    other_user = get_object_or_404(User, id=user_id)
-    friendship = Friendship.objects.filter(
-            Q(requester=request.user, addressee=other_user) |
-            Q(requester=other_user, addressee=request.user),
-            status="accepted",
-            ).first()
-
-    if friendship:
-        friendship.delete()
-    return redirect("detail_user", user_id=user_id)
 
 @login_required
 def delete_hike(request, hike_id):
@@ -514,6 +500,19 @@ def delete_hike(request, hike_id):
     if hike.organizer != request.user:
         return redirect("detail_hike", hike_id=hike_id)
     if request.method == "POST":
+        participants = User.objects.filter(
+                event_join_requests__event=hike,
+                event_join_requests__status="approved",
+                ).exclude(id=request.user.id)
+
+        notifications = [
+                Notification(
+                    recipient=participant,
+                    message=f"The hike '{hike.title}' has been deleted by the organizer.",
+                    )
+                for participant in participants
+                ]
+        Notification.objects.bulk_create(notifications)
         hike.delete()
         return redirect("home")
     return redirect("detail_hike", hike_id=hike_id)
@@ -532,19 +531,19 @@ def report_user(request, user_id):
 
             subject = f"User Report: {reported_user.username}"
             message = (
-                f"Reporter: {request.user.username} (id={request.user.id})\n"
-                f"Reported user: {reported_user.username} (id={reported_user.id})\n"
-                f"Reason: {reason}\n\n"
-                f"Details:\n{details}"
-            )
+                    f"Reporter: {request.user.username} (id={request.user.id})\n"
+                    f"Reported user: {reported_user.username} (id={reported_user.id})\n"
+                    f"Reason: {reason}\n\n"
+                    f"Details:\n{details}"
+                    )
 
             send_mail(
-                subject,
-                message,
-                None,  # uses DEFAULT_FROM_EMAIL
-                ["justinwsorrells@gmail.com", "benjaminmst@gmail.com"],
-                fail_silently=False,
-            )
+                    subject,
+                    message,
+                    None,  # uses DEFAULT_FROM_EMAIL
+                    ["justinwsorrells@gmail.com", "benjaminmst@gmail.com"],
+                    fail_silently=False,
+                    )
 
             return redirect("detail_user", user_id=user_id)
     else:
@@ -553,7 +552,7 @@ def report_user(request, user_id):
     return render(request, "report_user.html", {
         "form": form,
         "reported_user": reported_user,
-    })
+        })
 
 @login_required
 def remove_participant(request, hike_id, user_id):
@@ -568,12 +567,120 @@ def remove_participant(request, hike_id, user_id):
     participant = get_object_or_404(User, id=user_id)
 
     join_request = get_object_or_404(
-        EventJoinRequest,
-        event=hike,
-        user=participant,
-        status="approved",
-    )
-
+            EventJoinRequest,
+            event=hike,
+            user=participant,
+            status="approved",
+            )
+    Notification.objects.create(
+            recipient=participant,
+            sender=request.user,
+            hike=hike,
+            message=f"You have been removed from '{hike.title}'.",
+            )
     join_request.delete()
 
     return redirect("detail_hike", hike_id=hike_id)
+
+@login_required
+def hike_thread(request, hike_id):
+    hike = get_object_or_404(HikingEvent, id=hike_id)
+    is_participant = EventJoinRequest.objects.filter(
+            hike=hike,
+            user=request.user,
+            status="approved"
+            ).exists()
+    if hike.organizer != request.user and not is_participant:
+        return HttpResponseForbidden("You are not allowed to view this thread.")
+    Notification.objects.filter(
+            recipient=request.user,
+            hike=hike,
+            is_read=False,
+            message=f"You have unread messages in '{hike.title}'.",
+            ).update(is_read=True)
+    messages = hike.messages.select_related("user").order_by("created_at")
+    if request.method == "POST":
+        form = HikeMessageForm(request.POST)
+        if form.is_valid():
+            message = form.save(commit=False)
+            message.event = hike
+            message.user = request.user
+            message.save()
+
+            recipients = list(
+                    User.objects.filter(
+                        event_join_requests__event=hike,
+                        event_join_requests__status="approved",
+                        ).exclude(id=request.user.id)
+                    )
+
+            if hike.organizer != request.user and hike.organizer not in recipients:
+                recipients.append(hike.organizer)
+
+            for recipient in recipients:
+                already_has_unread_notification = Notification.objects.filter(
+                        recipient=recipient,
+                        hike=hike,
+                        is_read=False,
+                        message=f"You have unread messages in '{hike.title}'.",
+                        ).exists()
+
+                if not already_has_unread_notification:
+                    Notification.objects.create(
+                            recipient=recipient,
+                            hike=hike,
+                            message=f"You have unread messages in '{hike.title}'.",
+                            )
+
+            return redirect("hike_thread", hike_id=hike.id)
+    else:
+        form = HikeMessageForm()
+
+    return render(request, "hike_thread.html", {
+        "hike": hike,
+        "messages": messages,
+        "form": form,
+        })
+
+@login_required
+def notifications(request):
+    notification = Notification.objects.filter(recipient=request.user).order_by("-created_at")
+    notification.filter(is_read=False).update(is_read=True)
+    return render(request, "notifications.html", {
+        "notifications": notification,
+        })
+
+@login_required
+def cancel_hike_request(request, hike_id):
+    if request.method != "POST":
+        return redirect("detail_hike", hike_id=hike_id)
+
+    join_request = get_object_or_404(
+            EventJoinRequest,
+            event_id=hike_id,
+            user=request.user,
+            status="pending",
+            )
+    Notification.objects.create(
+            recipient=join_request.event.organizer,
+            sender=request.user,
+            hike=join_request.event,
+            notification_type="hike_join_request",
+            message=f"{request.user.username} cancelled their request to join '{join_request.event.title}'.",
+            )
+    join_request.delete()
+    return redirect("detail_hike", hike_id=hike_id)
+
+@login_required
+def cancel_friend_request(request, user_id):
+    if request.method != "POST":
+        return redirect("detail_user", user_id=user_id)
+
+    friendship = get_object_or_404(
+            Friendship,
+            requester=request.user,
+            addressee_id=user_id,
+            status="pending",
+            )
+    friendship.delete()
+    return redirect("detail_user", user_id=user_id)

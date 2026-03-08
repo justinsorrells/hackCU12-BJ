@@ -102,6 +102,9 @@
     {% else %}
         {% for user in users %}
             <div class="result">
+		{% if user.profile_picture %}
+			<img src="{{ user.profile_picture.url }}" width="20%">
+		{% endif %}
                 <strong>{{ user.name }}</strong><br>
                 @{{ user.username }}<br>
                 {{ user.location }}<br>

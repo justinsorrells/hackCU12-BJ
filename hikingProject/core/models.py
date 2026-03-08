@@ -151,3 +151,58 @@ class EventJoinRequest(models.Model):
 
     def __str__(self):
         return f"{self.user} -> {self.event} ({self.status})"
+
+class HikeMessage(models.Model):
+    event = models.ForeignKey(
+        "HikingEvent",
+        on_delete=models.CASCADE,
+        related_name="messages"
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="hike_messages"
+    )
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class Notification(models.Model):
+    NOTIFICATION_TYPES = [
+        ("friend_request", "Friend Request"),
+        ("friend_accepted", "Friend Accepted"),
+        ("hike_join_request", "Hike Join Request"),
+        ("hike_join_approved", "Hike Join Approved"),
+        ("hike_join_rejected", "Hike Join Rejected"),
+        ("hike_message", "Hike Message"),
+        ("participant_removed", "Participant Removed"),
+    ]
+
+    recipient = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="notifications",
+    )
+
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="sent_notifications",
+    )
+
+    notification_type = models.CharField(max_length=30, choices=NOTIFICATION_TYPES)
+
+    message = models.CharField(max_length=255)
+
+    is_read = models.BooleanField(default=False)
+
+    hike = models.ForeignKey(
+        "HikingEvent",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="notifications",
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)

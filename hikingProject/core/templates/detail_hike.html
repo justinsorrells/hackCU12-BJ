@@ -13,6 +13,11 @@ Home
 		{% csrf_token %}
 		<button type="submit">Request to Join</button>
 	    </form>
+	{% elif has_pending_request %}
+	     <form method="post" action="{% url 'cancel_hike_request' hike.id %}">
+		{% csrf_token %}
+		<button type="submit">Cancel Request to Join</button>
+	    </form>
 	{% endif %}
 	{% if user != hike.organizer and is_participant %}
 	    <form method="post" action="{% url 'leave_hike' hike.id %}">
@@ -49,7 +54,9 @@ Home
 	<p><strong>Mileage:</strong> {{ hike.mileage }}</p>
 	<p><strong>Elevation Gain:</strong> {{ hike.elevation_gain }} ft</p>
 	<p><strong>Visibility:</strong> {{ hike.get_visibility_display }}</p>
-
+	{% if can_view_thread %}
+	    <a href="{% url 'hike_thread' hike.id %}">Open Discussion Thread</a>
+	{% endif %}
 	{% if hike.description %}
 		<p><strong>Description:</strong> {{ hike.description }}</p>
 	{% endif %}

@@ -19,7 +19,12 @@
                 {% csrf_token %}
                 <button type="submit">Logout</button>
             </form>
-
+	    <a href="{% url 'notifications' %}">
+		    Notifications
+		    {% if unread_notifications_count > 0 %}
+			({{ unread_notifications_count }})
+		    {% endif %}
+</a>
         {% else %}
             <a href="{% url 'login' %}" style="color:white; margin-right:15px;">Login</a>
             <a href="{% url 'register' %}" style="color:white;">Register</a>

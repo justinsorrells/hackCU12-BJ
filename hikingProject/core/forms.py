@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import User, HikingEvent
+from .models import *
 import datetime as dt
 
 class RegisterForm(UserCreationForm):
@@ -195,3 +195,17 @@ class ReportUserForm(forms.Form):
         required=False,
         widget=forms.Textarea(attrs={"rows": 4})
     )
+
+class HikeMessageForm(forms.ModelForm):
+    class Meta:
+        model = HikeMessage
+        fields = ["content"]
+        widgets = {
+            "content": forms.Textarea(attrs={
+                "rows": 3,
+                "placeholder": "Write a message..."
+            })
+        }
+        labels = {
+            "content": ""
+        }

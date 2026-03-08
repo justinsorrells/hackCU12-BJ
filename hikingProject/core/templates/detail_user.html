@@ -13,6 +13,11 @@ Profile
             {% csrf_token %}
             <button type="submit">Add Friend</button>
         </form>
+    {% elif has_sent_request %}
+	<form method="post" action="{% url 'cancel_friend_request' profile_user.id %}">
+            {% csrf_token %}
+            <button type="submit">Cancel Friend Request</button>
+        </form>
     {% endif %}
     {% if not is_profile and is_friend %}
 	<form method="post" action="{% url 'remove_friend' profile_user.id %}">

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}
+Notifications
+{% endblock %}
+
+{% block content %}
+{% for notification in notifications %}
+    <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;">
+        <p>{{ notification.message }}</p>
+        {% if notification.hike %}
+            <a href="{% url 'detail_hike' notification.hike.id %}">View hike</a>
+        {% endif %}
+        <small>{{ notification.created_at }}</small>
+    </div>
+{% empty %}
+    <p>No notifications.</p>
+{% endfor %}
+{% endblock %}
