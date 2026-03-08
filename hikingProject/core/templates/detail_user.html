@@ -121,37 +121,27 @@
         <section class="section">
             <div class="section-header">
                 <div>
-                    <span class="eyebrow">Friend requests</span>
-                    <h2 class="section-title">Incoming requests</h2>
+                    <span class="eyebrow">Friends</span>
+                    <h2 class="section-title">My Network</h2>
                 </div>
             </div>
 
-            {% if incoming_requests %}
-                <ul class="resource-list">
-                    {% for friendship in incoming_requests %}
-                        <li class="request-row">
-                            <div>
-                                <a class="person-link" href="{% url 'detail_user' friendship.requester.id %}">{{ friendship.requester.name|default:friendship.requester.username }}</a>
-                                <p class="supporting-copy">@{{ friendship.requester.username }}</p>
-                            </div>
-                            <div class="inline-actions">
-                                <form method="post" action="{% url 'accept_friend_request' friendship.id %}">
-                                    {% csrf_token %}
-                                    <button class="btn btn-primary btn-small" type="submit">Accept</button>
-                                </form>
-                                <form method="post" action="{% url 'decline_friend_request' friendship.id %}">
-                                    {% csrf_token %}
-                                    <button class="btn btn-outline btn-small" type="submit">Decline</button>
-                                </form>
-                            </div>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <div class="empty-state">
-                    <h3 class="card-title">No incoming requests.</h3>
-                </div>
-            {% endif %}
+			{% if friends %}
+					<ul class="resource-list">
+						{% for friend in friends %}
+							<li class="request-row">
+								<div>
+									<a class="person-link" href="{% url 'detail_user' friend.id %}">{{ friend.name|default:friend.username }}</a>
+									<p class="supporting-copy">@{{ friend.username }}</p>
+								</div>
+							</li>
+						{% endfor %}
+					</ul>
+			{% else %}
+				<div class="empty-state">
+					<h3 class="card-title">No friends yet!</h3>
+				</div>
+			{% endif %}
         </section>
 
         <section class="section dashboard-grid">
@@ -176,22 +166,32 @@
             </article>
 
             <article class="card">
-                <span class="eyebrow">Friends</span>
-                <h2 class="card-title">Your network</h2>
-                {% if friends %}
-                    <ul class="resource-list">
-                        {% for friend in friends %}
-                            <li class="resource-item">
-                                <div>
-                                    <a class="person-link" href="{% url 'detail_user' friend.id %}">{{ friend.name|default:friend.username }}</a>
-                                    <p class="supporting-copy">@{{ friend.username }}</p>
-                                </div>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p class="supporting-copy">No friends yet.</p>
-                {% endif %}
+                <span class="eyebrow">Pending</span>
+                <h2 class="card-title">Incoming Requests</h2>
+                {% if incoming_requests %}
+					<ul class="resource-list">
+						{% for friendship in incoming_requests %}
+							<li class="resource-item">
+								<div>
+									<a class="person-link" href="{% url 'detail_user' friendship.requester.id %}">{{ friendship.requester.name|default:friendship.requester.username }}</a>
+									<p class="supporting-copy">@{{ friendship.requester.username }}</p>
+								</div>
+								<div class="inline-actions">
+									<form method="post" action="{% url 'accept_friend_request' friendship.id %}">
+										{% csrf_token %}
+										<button class="btn btn-primary btn-small" type="submit">Accept</button>
+									</form>
+									<form method="post" action="{% url 'decline_friend_request' friendship.id %}">
+										{% csrf_token %}
+										<button class="btn btn-outline btn-small" type="submit">Decline</button>
+									</form>
+								</div>
+							</li>
+						{% endfor %}
+					</ul>
+				{% else %}
+					<p class="supporting-copy">No incoming requests.</p>
+            	{% endif %}
             </article>
         </section>
     {% endif %}
