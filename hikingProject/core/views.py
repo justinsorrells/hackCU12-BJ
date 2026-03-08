@@ -4,7 +4,7 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from .models import HikingEvent
-from .forms import RegisterForm
+from .forms import RegisterForm, HikingEventForm
 
 # Create your views here.
 @login_required
@@ -32,3 +32,16 @@ def register_view(request):
 @login_required
 def profile_view(request):
     return render(request, "profile.html")
+
+@login_required
+def create_event(request):
+    if request.method == "POST":
+        form = HikingEventForm(request.POST)
+        if form.is_valid():
+            event = form.save(commit=False)
+            event.organizer = request.user
+            event.save()
+            return redirect("home")
+    else:
+        form = HikingEventForm()
+    return render(request, "create_event.html", {"form": form})
