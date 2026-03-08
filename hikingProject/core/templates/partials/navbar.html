@@ -20,7 +20,6 @@
                             <a class="nav-link {% if url_name == 'home' %}is-active{% endif %}" href="{% url 'home' %}">Home</a>
                             <a class="nav-link {% if url_name == 'search' %}is-active{% endif %}" href="{% url 'search' %}">Search</a>
                             <a class="nav-link {% if url_name == 'create_event' %}is-active{% endif %}" href="{% url 'create_event' %}">Create hike</a>
-                            <a class="nav-link {% if url_name == 'notifications' %}is-active{% endif %}" href="{% url 'notifications' %}">Notifications</a>
                             <a class="nav-link {% if url_name == 'detail_user' or url_name == 'edit_profile' or url_name == 'password_change' or url_name == 'password_change_done' %}is-active{% endif %}" href="{% url 'detail_user' user.id %}">Profile</a>
                         </nav>
 

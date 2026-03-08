@@ -364,7 +364,6 @@ button {
     inset: 0 auto auto 0;
     width: 100%;
     height: 0.35rem;
-    background: linear-gradient(90deg, var(--river-500), var(--mist-200), var(--canyon-700));
     opacity: 0.95;
 }
 
@@ -957,7 +956,6 @@ textarea:focus-visible {
     inset: 0 auto auto 0;
     width: 100%;
     height: 0.35rem;
-    background: linear-gradient(90deg, var(--canyon-700), var(--mist-200), var(--river-500));
 }
 
 .profile-header {
