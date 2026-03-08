@@ -5,7 +5,7 @@ from .models import User, HikingEvent
 class RegisterForm(UserCreationForm):
     class Meta:
         model = User
-        fields = ("username", "password1", "password2", "gender")
+        fields = ("username", "password1", "password2", "gender",  "name", "location", "experience_level", "profile_picture", "pace")
 
 class HikingEventForm(forms.ModelForm):
     class Meta:
