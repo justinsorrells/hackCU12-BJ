@@ -852,3 +852,67 @@ def remove_carpool_participant(request, offer_id, user_id):
     carpool_request.delete()
 
     return redirect("view_carpool_offers", hike_id=offer.event.id)
+
+@login_required
+def view_carpool_offers(request, hike_id):
+    hike = get_object_or_404(HikingEvent, id=hike_id)
+
+    user_offer = CarpoolOffer.objects.filter(
+        event=hike,
+        driver=request.user
+    ).first()
+
+    carpool_offers = CarpoolOffer.objects.filter(
+        event=hike
+    ).select_related("driver").prefetch_related("ride_requests__rider")
+
+    for offer in carpool_offers:
+        offer.user_request = offer.ride_requests.filter(rider=request.user).first()
+
+    return render(request, "carpool_offers.html", {
+        "hike": hike,
+        "carpool_offers": carpool_offers,
+        "user_offer": user_offer,
+    })
+
+@login_required
+def delete_carpool_offer(request, offer_id):
+    offer = get_object_or_404(CarpoolOffer, id=offer_id)
+
+    if offer.driver != request.user:
+        return redirect("view_carpool_offers", hike_id=offer.event.id)
+
+    if request.method == "POST":
+        offer.delete()
+
+    return redirect("view_carpool_offers", hike_id=offer.event.id)
+
+@login_required
+def request_carpool(request, offer_id):
+    offer = get_object_or_404(CarpoolOffer, id=offer_id)
+
+    if offer.driver == request.user:
+        return redirect("view_carpool_offers", hike_id=offer.event.id)
+
+    is_participant = EventJoinRequest.objects.filter(
+        event=offer.event,
+        user=request.user,
+        status="approved",
+    ).exists()
+
+    if not is_participant:
+        return redirect("view_carpool_offers", hike_id=offer.event.id)
+
+    existing_request = CarpoolRequest.objects.filter(
+        carpool_offer=offer,
+        rider=request.user,
+    ).first()
+
+    if existing_request is None:
+        CarpoolRequest.objects.create(
+            carpool_offer=offer,
+            rider=request.user,
+            status="pending",
+        )
+
+    return redirect("view_carpool_offers", hike_id=offer.event.id)
