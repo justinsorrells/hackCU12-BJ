@@ -98,16 +98,18 @@
                 <span class="eyebrow eyebrow--warm">Mutuals</span>
                 <h2 class="card-title">Shared connections</h2>
                 {% if mutual_friends %}
-                    <ul class="resource-list">
-                        {% for friend in mutual_friends %}
-                            <li class="resource-item">
-                                <div>
-                                    <a class="person-link" href="{% url 'detail_user' friend.id %}">{{ friend.name|default:friend.username }}</a>
-                                    <p class="supporting-copy">@{{ friend.username }}</p>
-                                </div>
-                            </li>
-                        {% endfor %}
-                    </ul>
+                    <div style="max-height: 300px; overflow-y: auto;">
+                        <ul class="resource-list">
+                            {% for friend in mutual_friends %}
+                                <li class="resource-item">
+                                    <div>
+                                        <a class="person-link" href="{% url 'detail_user' friend.id %}">{{ friend.name|default:friend.username }}</a>
+                                        <p class="supporting-copy">@{{ friend.username }}</p>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
                 {% else %}
                     <div class="empty-state">
                         <h3 class="card-title">No mutual friends yet.</h3>
@@ -127,6 +129,7 @@
             </div>
 
 			{% if friends %}
+				<div style="max-height: 300px; overflow-y: auto;">
 					<ul class="resource-list">
 						{% for friend in friends %}
 							<li class="request-row">
@@ -137,6 +140,7 @@
 							</li>
 						{% endfor %}
 					</ul>
+				</div>
 			{% else %}
 				<div class="empty-state">
 					<h3 class="card-title">No friends yet!</h3>
