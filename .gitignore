@@ -17,6 +17,7 @@ migrations/
 
 # Static files
 staticfiles/
+media/
 
 # Environment variables
 .env

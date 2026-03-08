@@ -104,12 +104,14 @@ def edit_hike(request, hike_id):
 def detail_hike(request, hike_id):
     hike = get_object_or_404(HikingEvent, id=hike_id)
     return render(request, "detail_hike.html", {"hike": hike})
+
+@login_required
 def edit_profile(request):
     if request.method == "POST":
         form = EditProfileForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
-            return redirect("profile")
+            return redirect("detail_user", user_id=request.user.id)
     else:
         form = EditProfileForm(instance=request.user)
 
