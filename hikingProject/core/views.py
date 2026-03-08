@@ -28,3 +28,7 @@ def register_view(request):
     else:
         form = RegisterForm()
     return render(request, "registration/register.html", {"form": form})
+
+@login_required
+def profile_view(request):
+    return render(request, "profile.html")

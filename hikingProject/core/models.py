@@ -22,7 +22,7 @@ class User(AbstractUser):
     location = models.CharField(max_length=100)    
     gender = models.CharField(max_length=1, choices=GENDER)
     experience_level = models.CharField(max_length=1, choices=EXPERIENCE_LEVEL)
-    profile_picute = models.ImageField(upload_to="profiles/", blank=True, null=True)
+    profile_picture = models.ImageField(upload_to="profiles/", blank=True, null=True)
     pace = models.CharField(max_length=1, choices=PACE)
 
 class Friendship(models.Model):
