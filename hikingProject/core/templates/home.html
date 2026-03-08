@@ -1,30 +1,84 @@
 {% extends "base.html" %}
 
-{% block title %}
-Home
-{% endblock %}
+{% block title %}Home | TrailCircle{% endblock %}
 
 {% block content %}
+    <section class="hero">
+        <article class="hero-card hero-card--dark">
+            <span class="eyebrow">Your basecamp</span>
+            <div class="hero-copy">
+                <h1 class="hero-title">Plan hikes, keep your crew aligned, and move faster from your phone.</h1>
+                <p>TrailCircle keeps event details, requests, threads, carpools, and notifications in one polished workflow so your next outing feels organized before you hit the trail.</p>
+            </div>
+            <div class="hero-actions">
+                <a class="btn btn-primary" href="{% url 'create_event' %}">Create a hike</a>
+                <a class="btn btn-secondary" href="{% url 'search' %}">Discover hikes</a>
+            </div>
+            <div class="metric-grid">
+                <div class="metric-card">
+                    <p class="metric-label">Upcoming hikes</p>
+                    <p class="metric-value">{{ events|length }}</p>
+                </div>
+                <div class="metric-card">
+                    <p class="metric-label">Unread alerts</p>
+                    <p class="metric-value">{{ unread_notifications_count }}</p>
+                </div>
+                <div class="metric-card">
+                    <p class="metric-label">Hosted hikes</p>
+                    <p class="metric-value">{{ user.organized_hikes.count }}</p>
+                </div>
+                <div class="metric-card">
+                    <p class="metric-label">Profile</p>
+                    <p class="metric-value">@{{ user.username }}</p>
+                </div>
+            </div>
+        </article>
 
-<h2>Upcoming Hikes</h2>
+        <article class="hero-card">
+            <span class="eyebrow eyebrow--warm">Quick actions</span>
+            <h2 class="card-title">Keep the day moving.</h2>
+            <p class="card-copy">Jump into the screens users rely on most during demos: search, profile, notifications, and event creation.</p>
+            <div class="stack space-top">
+                <a class="card person-card" href="{% url 'notifications' %}">
+                    <span class="status-pill status-pill--pending">Notifications</span>
+                    <h3 class="card-title">Review requests and updates</h3>
+                    <p class="card-copy">See join activity, carpool responses, and thread alerts in one clean inbox.</p>
+                </a>
+                <a class="card person-card" href="{% url 'detail_user' user.id %}">
+                    <span class="status-pill status-pill--soft">Profile</span>
+                    <h3 class="card-title">Manage your social presence</h3>
+                    <p class="card-copy">Update your hiking preferences, review friendships, and keep your profile stakeholder-ready.</p>
+                </a>
+            </div>
+        </article>
+    </section>
 
-{% if events %}
-    <ul>
-        {% for event in events %}
-            <li>
-                <strong>{{ event.title }}</strong><br>
-	    	<a href="{% url 'detail_hike' event.id %}">Hike Details</a>
-                Location: {{ event.location }}<br>
-                Date: {{ event.date }} {{ event.time }}<br>
-                Pace: {{ event.pace }}<br>
-                Distance: {{ event.mileage }} miles<br>
-                Elevation gain: {{ event.elevation_gain }} ft
-            </li>
-            <br>
-        {% endfor %}
-    </ul>
-{% else %}
-    <p>No hikes available yet.</p>
-{% endif %}
+    <section class="section">
+        <div class="section-header">
+            <div>
+                <span class="eyebrow">Upcoming hikes</span>
+                <h2 class="section-title">Everything on your calendar</h2>
+                <p class="section-subtitle">These are the hikes you are organizing or already approved to join.</p>
+            </div>
+            <a class="btn btn-outline btn-small" href="{% url 'search' %}">Explore more hikes</a>
+        </div>
 
+        {% if events %}
+            <div class="dashboard-grid">
+                {% for event in events %}
+                    {% include "partials/hike_card.html" with hike=event show_ride_link=True %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <span class="eyebrow eyebrow--warm">Nothing booked yet</span>
+                <h3 class="card-title">Your trail calendar is open.</h3>
+                <p>Use search to discover new hikes from your network or create an event and start inviting people.</p>
+                <div class="hero-actions justify-center">
+                    <a class="btn btn-primary" href="{% url 'create_event' %}">Create your first hike</a>
+                    <a class="btn btn-secondary" href="{% url 'search' %}">Browse hikes</a>
+                </div>
+            </div>
+        {% endif %}
+    </section>
 {% endblock %}

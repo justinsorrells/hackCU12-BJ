@@ -1,118 +1,159 @@
 {% extends "base.html" %}
 
-{% block title %}Search{% endblock %}
+{% block title %}Discover | TrailCircle{% endblock %}
 
 {% block content %}
-<style>
-    .search-box {
-        width: 600px;
-        background: white;
-        padding: 24px;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
+    <section class="search-layout">
+        <article class="form-card">
+            <span class="eyebrow">Discover</span>
+            <h1 class="form-title">Search hikes and people</h1>
+            <p class="supporting-copy">Use the shared filters below to switch between public hike discovery and social profile browsing without losing the clean mobile-first flow.</p>
 
-    .tabs {
-        margin: 20px 0;
-    }
+            <form method="get" class="form-layout">
+                {{ form.tab }}
+                <div class="segmented-control">
+                    <a class="segmented-control__item {% if tab == 'hikes' %}is-active{% endif %}" href="{% url 'search' %}?q={{ query|urlencode }}&tab=hikes">Hikes</a>
+                    <a class="segmented-control__item {% if tab == 'users' %}is-active{% endif %}" href="{% url 'search' %}?q={{ query|urlencode }}&tab=users">People</a>
+                </div>
 
-    .tabs a {
-        margin-right: 12px;
-        text-decoration: none;
-        color: #4f46e5;
-        font-weight: bold;
-    }
+                <div class="search-toolbar">
+                    <div class="search-field">{{ form.q }}</div>
+                    <button class="btn btn-primary" type="submit">Search</button>
+                </div>
 
-    .tabs .active {
-        text-decoration: underline;
-    }
+                {% if tab == "hikes" %}
+                    <div class="filter-grid">
+                        <div class="form-field">
+                            <label for="{{ form.pace.id_for_label }}">Pace</label>
+                            {{ form.pace }}
+                        </div>
+                        <div class="form-field">
+                            <label for="{{ form.experience.id_for_label }}">Experience</label>
+                            {{ form.experience }}
+                        </div>
+                        <div class="form-field">
+                            <label for="{{ form.date.id_for_label }}">Date</label>
+                            {{ form.date }}
+                        </div>
+                        <div class="form-field">
+                            <label for="{{ form.max_mileage.id_for_label }}">Max mileage</label>
+                            {{ form.max_mileage }}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="filter-grid">
+                        <div class="form-field">
+                            <label for="{{ form.location.id_for_label }}">Location</label>
+                            {{ form.location }}
+                        </div>
+                        <div class="form-field">
+                            <label for="{{ form.gender.id_for_label }}">Gender</label>
+                            {{ form.gender }}
+                        </div>
+                        <div class="form-field">
+                            <label for="{{ form.min_age.id_for_label }}">Minimum age</label>
+                            {{ form.min_age }}
+                        </div>
+                        <div class="form-field">
+                            <label for="{{ form.max_age.id_for_label }}">Maximum age</label>
+                            {{ form.max_age }}
+                        </div>
+                        <div class="form-field">
+                            <label for="{{ form.user_experience.id_for_label }}">Experience</label>
+                            {{ form.user_experience }}
+                        </div>
+                        <div class="form-field">
+                            <label for="{{ form.user_pace.id_for_label }}">Pace</label>
+                            {{ form.user_pace }}
+                        </div>
+                    </div>
+                {% endif %}
+            </form>
+        </article>
 
-    .result {
-        padding: 12px 0;
-        border-top: 1px solid #ddd;
-    }
+        <aside class="panel">
+            <span class="eyebrow eyebrow--warm">Search mode</span>
+            <h2 class="card-title">{% if tab == "hikes" %}Find the right route{% else %}Find the right crew{% endif %}</h2>
+            <p class="card-copy">
+                {% if tab == "hikes" %}
+                    Narrow hike results by pace, experience, date, and mileage to quickly surface the most relevant outings.
+                {% else %}
+                    Browse profiles outside your existing friend circle and filter by pace, experience, location, or age range.
+                {% endif %}
+            </p>
+        </aside>
+    </section>
 
-    .filters {
-        margin-top: 12px;
-        margin-bottom: 12px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-
-    .filters select,
-    .filters input {
-        padding: 6px;
-    }
-</style>
-
-<div class="search-box">
-    <h1>Search</h1>
-
-    <form method="get">
-        {{ form.q }}
-        {{ form.tab }}
+    <section class="section">
+        <div class="section-header">
+            <div>
+                <span class="eyebrow">Results</span>
+                <h2 class="section-title">{% if tab == "hikes" %}Hike matches{% else %}People matches{% endif %}</h2>
+                <p class="section-subtitle">{% if query %}Showing results for "{{ query }}".{% else %}Showing recent suggestions to get you started.{% endif %}</p>
+            </div>
+        </div>
 
         {% if tab == "hikes" %}
-            <div class="filters">
-                {{ form.pace }}
-                {{ form.experience }}
-                {{ form.date }}
-                {{ form.max_mileage }}
-            </div>
+            {% if hikes %}
+                <div class="dashboard-grid">
+                    {% for hike in hikes %}
+                        {% include "partials/hike_card.html" with hike=hike show_ride_link=False %}
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <span class="eyebrow eyebrow--warm">No hike matches</span>
+                    <h3 class="card-title">Try widening the filters.</h3>
+                    <p>Adjust pace, date, or mileage to surface more hikes from your network and public listings.</p>
+                </div>
+            {% endif %}
+        {% else %}
+            {% if users %}
+                <div class="dashboard-grid">
+                    {% for user in users %}
+                        <article class="card person-card">
+                            <div class="identity-row">
+                                {% if user.profile_picture %}
+                                    <img class="avatar avatar--large" src="{{ user.profile_picture.url }}" alt="{{ user.username }} profile picture">
+                                {% else %}
+                                    <div class="avatar-placeholder avatar-placeholder--large">{{ user.username|slice:":1"|upper }}</div>
+                                {% endif %}
+                                <div class="identity-copy">
+                                    <h3 class="card-title">{{ user.name|default:user.username }}</h3>
+                                    <p>@{{ user.username }}</p>
+                                </div>
+                            </div>
+                            <div class="meta-grid">
+                                <div class="meta-item">
+                                    <span class="meta-label">Location</span>
+                                    <strong>{{ user.location|default:"Not listed" }}</strong>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">Experience</span>
+                                    <strong>{{ user.get_experience_level_display }}</strong>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">Pace</span>
+                                    <strong>{{ user.get_pace_display }}</strong>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">Age</span>
+                                    <strong>{{ user.age|default:"Not listed" }}</strong>
+                                </div>
+                            </div>
+                            <div class="button-row">
+                                <a class="btn btn-primary btn-small" href="{% url 'detail_user' user.id %}">View profile</a>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <span class="eyebrow eyebrow--warm">No people matches</span>
+                    <h3 class="card-title">Try a broader profile search.</h3>
+                    <p>Remove one or two filters to surface more hikers outside your current friend list.</p>
+                </div>
+            {% endif %}
         {% endif %}
-
-        {% if tab == "users" %}
-            <div class="filters">
-                {{ form.location }}
-                {{ form.gender }}
-                {{ form.min_age }}
-                {{ form.max_age }}
-                {{ form.user_experience }}
-                {{ form.user_pace }}
-            </div>
-        {% endif %}
-
-        <button type="submit">Search</button>
-    </form>
-
-    <div class="tabs">
-        <a href="{% url 'search' %}?q={{ query }}&tab=hikes"
-           class="{% if tab == 'hikes' %}active{% endif %}">
-            Hikes
-        </a>
-
-        <a href="{% url 'search' %}?q={{ query }}&tab=users"
-           class="{% if tab == 'users' %}active{% endif %}">
-            Users
-        </a>
-    </div>
-
-    {% if tab == "hikes" %}
-        {% for hike in hikes %}
-            <div class="result">
-                <strong>{{ hike.title }}</strong><br>
-                {{ hike.location }}<br>
-                {{ hike.date }} at {{ hike.time }}<br>
-                <a href="{% url 'detail_hike' hike.id %}">Hike Details</a>
-            </div>
-        {% empty %}
-            <p>No hikes found.</p>
-        {% endfor %}
-    {% else %}
-        {% for user in users %}
-            <div class="result">
-		{% if user.profile_picture %}
-			<img src="{{ user.profile_picture.url }}" width="20%">
-		{% endif %}
-                <strong>{{ user.name }}</strong><br>
-                @{{ user.username }}<br>
-                {{ user.location }}<br>
-                <a href="{% url 'detail_user' user.id %}">View Profile</a>
-            </div>
-        {% empty %}
-            <p>No users found.</p>
-        {% endfor %}
-    {% endif %}
-</div>
+    </section>
 {% endblock %}

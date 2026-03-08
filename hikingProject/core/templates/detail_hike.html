@@ -1,171 +1,294 @@
 {% extends "base.html" %}
 
-{% block title %}
-Home
+{% block title %}{{ hike.title }} | TrailCircle{% endblock %}
+
+{% block extra_head %}
+    {% if hike.gpx_file %}
+        <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+    {% endif %}
 {% endblock %}
 
 {% block content %}
+    <section class="hero">
+        <article class="hero-card hero-card--dark">
+            <span class="eyebrow">Hike details</span>
+            <h1 class="hero-title">{{ hike.title }}</h1>
+            <p>{{ hike.description|default:"A polished hike page should make the plan, permissions, and next actions obvious at a glance." }}</p>
 
-	<h2>Upcoming Hikes</h2>
-	<h1>{{ hike.title }}</h1>
-	{% if user != hike.organizer and not has_pending_request and not is_participant and not has_been_rejected %}
-	    <form method="post" action="{% url 'request_to_join_hike' hike.id %}">
-		{% csrf_token %}
-		<button type="submit">Request to Join</button>
-	    </form>
-	{% elif has_pending_request %}
-	     <form method="post" action="{% url 'cancel_hike_request' hike.id %}">
-		{% csrf_token %}
-		<button type="submit">Cancel Request to Join</button>
-	    </form>
-	{% endif %}
-	{% if user != hike.organizer and is_participant %}
-	    <form method="post" action="{% url 'leave_hike' hike.id %}">
-		{% csrf_token %}
-		<button type="submit">Leave Hike</button>
-	    </form>
-	{% endif %}
-	{% if request.user == hike.organizer %}
-	    <h2>Pending Join Requests</h2>
-	    {% for join_request in hike.join_requests.all %}
-		{% if join_request.status == "pending" %}
-		    <p>
-			{{ join_request.user.username }}
+            <div class="tag-row">
+                <span class="status-pill">{{ hike.get_pace_display }}</span>
+                <span class="status-pill status-pill--pending">{{ hike.get_recommended_experience_display }}</span>
+                <span class="status-pill status-pill--soft">{{ hike.get_visibility_display }}</span>
+            </div>
 
-			<form method="post" action="{% url 'approve_join_request' join_request.id %}">
-			    {% csrf_token %}
-			    <button type="submit">Approve</button>
-			</form>
+            <div class="detail-stat-grid">
+                <div class="detail-stat">
+                    <span class="meta-label">When</span>
+                    <strong>{{ hike.date|date:"M j, Y" }} at {{ hike.time|time:"g:i A" }}</strong>
+                </div>
+                <div class="detail-stat">
+                    <span class="meta-label">Where</span>
+                    <strong>{{ hike.location }}</strong>
+                </div>
+                <div class="detail-stat">
+                    <span class="meta-label">Distance</span>
+                    <strong>{{ hike.mileage }} miles</strong>
+                </div>
+                <div class="detail-stat">
+                    <span class="meta-label">Elevation gain</span>
+                    <strong>{{ hike.elevation_gain }} ft</strong>
+                </div>
+                <div class="detail-stat">
+                    <span class="meta-label">Organizer</span>
+                    <strong>{{ hike.organizer.name|default:hike.organizer.username }}</strong>
+                </div>
+                <div class="detail-stat">
+                    <span class="meta-label">Approved hikers</span>
+                    <strong>{{ accepted_users|length }}</strong>
+                </div>
+            </div>
 
-			<form method="post" action="{% url 'reject_join_request' join_request.id %}">
-			    {% csrf_token %}
-			    <button type="submit">Reject</button>
-			</form>
-		    </p>
-		{% endif %}
-	    {% endfor %}
-	{% endif %}
-	<p><strong>Organizer:</strong> {{ hike.organizer.username }}</p>
-	<p><strong>Location:</strong> {{ hike.location }}</p>
-	<p><strong>Date:</strong> {{ hike.date }}</p>
-	<p><strong>Time:</strong> {{ hike.time }}</p>
-	<p><strong>Pace:</strong> {{ hike.get_pace_display }}</p>
-	<p><strong>Experience:</strong> {{ hike.get_recommended_experience_display }}</p>
-	<p><strong>Mileage:</strong> {{ hike.mileage }}</p>
-	<p><strong>Elevation Gain:</strong> {{ hike.elevation_gain }} ft</p>
-	<p><strong>Visibility:</strong> {{ hike.get_visibility_display }}</p>
-	{% if can_view_thread %}
-	    <a href="{% url 'hike_thread' hike.id %}">Open Discussion Thread</a>
-	{% endif %}
-	{% if hike.description %}
-		<p><strong>Description:</strong> {{ hike.description }}</p>
-	{% endif %}
+            <div class="hero-actions">
+                {% if user != hike.organizer and not has_pending_request and not is_participant and not has_been_rejected %}
+                    <form method="post" action="{% url 'request_to_join_hike' hike.id %}">
+                        {% csrf_token %}
+                        <button class="btn btn-primary" type="submit">Request to join</button>
+                    </form>
+                {% elif has_pending_request %}
+                    <form method="post" action="{% url 'cancel_hike_request' hike.id %}">
+                        {% csrf_token %}
+                        <button class="btn btn-secondary" type="submit">Cancel request</button>
+                    </form>
+                {% endif %}
 
-	{% if hike.max_participants %}
-		<p><strong>Max Participants:</strong> {{ hike.max_participants }}</p>
-	{% endif %}
+                {% if user != hike.organizer and is_participant %}
+                    <form method="post" action="{% url 'leave_hike' hike.id %}">
+                        {% csrf_token %}
+                        <button class="btn btn-outline" type="submit">Leave hike</button>
+                    </form>
+                {% endif %}
 
-	{% if qr_code %}
-		<p><strong>Share With QR Code:</strong></p>
-		<img src="data:image/png;base64,{{ qr_code }}" alt="QR Code">
-	{% endif %}
-	<p><strong>Participants:</strong></p><br>
-	{% for p in accepted_users %}
-		{{ p.username }}	
-		{% if request.user == hike.organizer %}
-			<form method="post" action="{% url 'remove_participant' hike.id p.id %}">
-			    {% csrf_token %}
-			    <button type="submit">Remove Participant</button>
-			</form>
-		{% endif %}<br>
-	{% endfor %}
+                {% if can_view_thread %}
+                    <a class="btn btn-secondary" href="{% url 'hike_thread' hike.id %}">Open thread</a>
+                {% endif %}
 
-	{% if has_been_rejected %}
-		<p>Your request to join this hike was rejected.</p>
-	{% elif has_pending_request %}
-		<p>Your request to join this hike is pending approval.</p>
-	{% endif %}
+                {% if is_participant or request.user == hike.organizer %}
+                    <a class="btn btn-outline" href="{% url 'view_carpool_offers' hike.id %}">
+                        {% if is_driver %}Manage carpools{% else %}View carpools{% endif %}
+                    </a>
+                {% endif %}
 
-	{% if request.user == hike.organizer %}
-		<a href="{% url 'edit_hike' hike.id %}">Edit hike</a>
-		<form method="post" action="{% url 'delete_hike' hike.id %}">
-			{% csrf_token %}
-			<button type="submit">Delete hike</button>
-		</form>
-	{% endif %}
+                {% if request.user == hike.organizer %}
+                    <a class="btn btn-outline" href="{% url 'edit_hike' hike.id %}">Edit hike</a>
+                    <form method="post" action="{% url 'delete_hike' hike.id %}">
+                        {% csrf_token %}
+                        <button class="btn btn-danger" type="submit">Delete hike</button>
+                    </form>
+                {% endif %}
+            </div>
 
-	{% if is_participant or request.user == hike.organizer %}
-		<a href="{% url 'view_carpool_offers' hike.id %}">View Carpools</a>
-	{% endif %}
+            {% if has_been_rejected %}
+                <div class="notice notice--warm">
+                    <p>Your request to join this hike was rejected.</p>
+                </div>
+            {% elif has_pending_request %}
+                <div class="notice">
+                    <p>Your join request is pending organizer approval.</p>
+                </div>
+            {% elif is_participant and user != hike.organizer %}
+                <div class="notice">
+                    <p>You are approved for this hike and can access the thread and carpool board.</p>
+                </div>
+            {% endif %}
+        </article>
 
-	{% if hike.gpx_file %}
-		<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-		<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+        <aside class="stack">
+            <article class="panel">
+                <span class="eyebrow eyebrow--warm">Organizer</span>
+                <h2 class="card-title">{{ hike.organizer.name|default:hike.organizer.username }}</h2>
+                <p class="card-copy">@{{ hike.organizer.username }}</p>
+                <div class="button-row">
+                    <a class="btn btn-secondary" href="{% url 'detail_user' hike.organizer.id %}">View organizer</a>
+                </div>
+            </article>
 
-		<div id="map" style="height: 500px; width: 100%;"></div>
+            <article class="panel">
+                <span class="eyebrow">Trip info</span>
+                <div class="stack">
+                    {% if hike.max_participants %}
+                        <div class="meta-item">
+                            <span class="meta-label">Group cap</span>
+                            <strong>{{ hike.max_participants }} participants</strong>
+                        </div>
+                    {% endif %}
+                    <div class="meta-item">
+                        <span class="meta-label">Carpools</span>
+                        <strong>{{ hike.carpool_offers.count }} offer{{ hike.carpool_offers.count|pluralize }}</strong>
+                    </div>
+                    {% if qr_code %}
+                        <div class="meta-item">
+                            <span class="meta-label">Share</span>
+                            <img src="data:image/png;base64,{{ qr_code }}" alt="QR code for {{ hike.title }}">
+                        </div>
+                    {% endif %}
+                </div>
+            </article>
+        </aside>
+    </section>
 
-		<script>
-			const map = L.map("map").setView([39.7392, -104.9903], 10);
+    <section class="section content-grid">
+        <article class="stack">
+            <div class="card">
+                <span class="eyebrow">Participants</span>
+                <h2 class="section-title">Approved hikers</h2>
+                {% if accepted_users %}
+                    <ul class="resource-list">
+                        {% for participant in accepted_users %}
+                            <li class="participant-row">
+                                <div>
+                                    <a class="person-link" href="{% url 'detail_user' participant.id %}">{{ participant.name|default:participant.username }}</a>
+                                    <p class="supporting-copy">@{{ participant.username }}</p>
+                                </div>
+                                {% if request.user == hike.organizer %}
+                                    <form method="post" action="{% url 'remove_participant' hike.id participant.id %}">
+                                        {% csrf_token %}
+                                        <button class="btn btn-outline btn-small" type="submit">Remove</button>
+                                    </form>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="empty-state">
+                        <h3 class="card-title">No approved participants yet.</h3>
+                        <p>Once requests are approved, hikers will appear here and gain access to discussion and carpools.</p>
+                    </div>
+                {% endif %}
+            </div>
 
-			L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-				maxZoom: 19
-			}).addTo(map);
+            {% if request.user == hike.organizer %}
+                <div class="card">
+                    <span class="eyebrow eyebrow--warm">Organizer queue</span>
+                    <h2 class="section-title">Pending join requests</h2>
+                    {% if pending_join_requests %}
+                        <ul class="resource-list">
+                            {% for join_request in pending_join_requests %}
+                                <li class="request-row">
+                                    <div>
+                                        <a class="person-link" href="{% url 'detail_user' join_request.user.id %}">{{ join_request.user.name|default:join_request.user.username }}</a>
+                                        <p class="supporting-copy">@{{ join_request.user.username }}</p>
+                                    </div>
+                                    <div class="inline-actions">
+                                        <form method="post" action="{% url 'approve_join_request' join_request.id %}">
+                                            {% csrf_token %}
+                                            <button class="btn btn-primary btn-small" type="submit">Approve</button>
+                                        </form>
+                                        <form method="post" action="{% url 'reject_join_request' join_request.id %}">
+                                            {% csrf_token %}
+                                            <button class="btn btn-outline btn-small" type="submit">Reject</button>
+                                        </form>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="empty-state">
+                            <h3 class="card-title">No pending requests.</h3>
+                            <p>New join requests will show up here for quick moderation.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
 
-			fetch("{{ hike.gpx_file.url }}")
-				.then(response => response.text())
-				.then(gpxText => {
-					const parser = new DOMParser();
-					const xml = parser.parseFromString(gpxText, "application/xml");
+            {% if hike.gpx_file %}
+                <div class="card">
+                    <span class="eyebrow">Route preview</span>
+                    <h2 class="section-title">GPX map</h2>
+                    <div class="map-shell">
+                        <div id="map"></div>
+                    </div>
+                </div>
+            {% endif %}
+        </article>
 
-					console.log(gpxText);
-					console.log(xml);
+        <aside class="stack">
+            <article class="panel">
+                <span class="eyebrow eyebrow--warm">Description</span>
+                <div class="detail-copy">
+                    <h3>What hikers should know</h3>
+                    <p>{{ hike.description|default:"No extra description has been added yet." }}</p>
+                </div>
+            </article>
 
-					const trkpts = Array.from(xml.getElementsByTagNameNS("*", "trkpt"));
-					const rtepts = Array.from(xml.getElementsByTagNameNS("*", "rtept"));
-					const wpts = Array.from(xml.getElementsByTagNameNS("*", "wpt"));
+            {% if is_participant or request.user == hike.organizer %}
+                <article class="panel">
+                    <span class="eyebrow">Transportation</span>
+                    <h2 class="card-title">Carpool board</h2>
+                    <p class="card-copy">Keep ride planning integrated with the rest of the hike experience instead of sending people off-platform.</p>
+                    <a class="btn btn-primary" href="{% url 'view_carpool_offers' hike.id %}">
+                        {% if is_driver %}Manage my carpool{% else %}Open carpool offers{% endif %}
+                    </a>
+                </article>
+            {% endif %}
+        </aside>
+    </section>
+{% endblock %}
 
-					let routePoints = [];
+{% block extra_js %}
+    {% if hike.gpx_file %}
+        <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+        <script>
+            const map = L.map("map").setView([39.7392, -104.9903], 10);
 
-					if (trkpts.length > 0) {
-						routePoints = trkpts.map(pt => [
-							parseFloat(pt.getAttribute("lat")),
-							parseFloat(pt.getAttribute("lon"))
-						]);
-					} else if (rtepts.length > 0) {
-						routePoints = rtepts.map(pt => [
-							parseFloat(pt.getAttribute("lat")),
-							parseFloat(pt.getAttribute("lon"))
-						]);
-					}
+            L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                maxZoom: 19
+            }).addTo(map);
 
-					console.log("trkpts:", trkpts.length);
-					console.log("rtepts:", rtepts.length);
-					console.log("wpts:", wpts.length);
-					console.log("routePoints:", routePoints);
+            fetch("{{ hike.gpx_file.url }}")
+                .then((response) => response.text())
+                .then((gpxText) => {
+                    const parser = new DOMParser();
+                    const xml = parser.parseFromString(gpxText, "application/xml");
 
-					if (routePoints.length > 0) {
-						const polyline = L.polyline(routePoints, {
-							color: "blue",
-							weight: 4,
-							opacity: 0.9
-						}).addTo(map);
+                    const trkpts = Array.from(xml.getElementsByTagNameNS("*", "trkpt"));
+                    const rtepts = Array.from(xml.getElementsByTagNameNS("*", "rtept"));
+                    const wpts = Array.from(xml.getElementsByTagNameNS("*", "wpt"));
 
-						if (wpts.length > 0) {
-							const startLat = parseFloat(wpts[0].getAttribute("lat"));
-							const startLon = parseFloat(wpts[0].getAttribute("lon"));
-							L.marker([startLat, startLon]).addTo(map).bindPopup("Start");
-						} else {
-							L.marker(routePoints[0]).addTo(map).bindPopup("Start");
-						}
+                    let routePoints = [];
 
-						map.fitBounds(polyline.getBounds());
-					} else {
-						console.log("No track or route points found in GPX.");
-					}
-				})
-				.catch(error => {
-					console.error("Error loading GPX:", error);
-				});
-		</script>
-	{% endif %}
+                    if (trkpts.length > 0) {
+                        routePoints = trkpts.map((pt) => [
+                            parseFloat(pt.getAttribute("lat")),
+                            parseFloat(pt.getAttribute("lon"))
+                        ]);
+                    } else if (rtepts.length > 0) {
+                        routePoints = rtepts.map((pt) => [
+                            parseFloat(pt.getAttribute("lat")),
+                            parseFloat(pt.getAttribute("lon"))
+                        ]);
+                    }
+
+                    if (routePoints.length > 0) {
+                        const polyline = L.polyline(routePoints, {
+                            color: "#0fa4af",
+                            weight: 4,
+                            opacity: 0.9
+                        }).addTo(map);
+
+                        if (wpts.length > 0) {
+                            const startLat = parseFloat(wpts[0].getAttribute("lat"));
+                            const startLon = parseFloat(wpts[0].getAttribute("lon"));
+                            L.marker([startLat, startLon]).addTo(map).bindPopup("Start");
+                        } else {
+                            L.marker(routePoints[0]).addTo(map).bindPopup("Start");
+                        }
+
+                        map.fitBounds(polyline.getBounds());
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error loading GPX:", error);
+                });
+        </script>
+    {% endif %}
 {% endblock %}

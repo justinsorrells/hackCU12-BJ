@@ -1,17 +1,41 @@
 {% extends "base.html" %}
 
-{% block title %}
-Create Hike
-{% endblock %}
+{% block title %}Create Hike | TrailCircle{% endblock %}
 
 {% block content %}
+    <section class="form-split">
+        <article class="form-card">
+            <span class="eyebrow">Plan a hike</span>
+            <h1 class="form-title">Create a new hiking event</h1>
+            <p class="supporting-copy">Build a clean event page with route details, difficulty expectations, and the information participants need before requesting to join.</p>
 
-<h1>Create Hiking Event</h1>
+            <form method="post" enctype="multipart/form-data" class="form-layout">
+                {% csrf_token %}
+                {% include "partials/form_fields.html" with form=form %}
+                <div class="button-row">
+                    <button class="btn btn-primary" type="submit">Create event</button>
+                    <a class="btn btn-outline" href="{% url 'home' %}">Cancel</a>
+                </div>
+            </form>
+        </article>
 
-<form method="post" enctype="multipart/form-data">
-	{% csrf_token %}
-	{{ form.as_p }}
-	<button type="submit">Create Event</button>
-</form>
-
+        <aside class="panel">
+            <span class="eyebrow eyebrow--warm">What stands out</span>
+            <h2 class="card-title">A strong event page feels effortless.</h2>
+            <div class="stack">
+                <div class="meta-item">
+                    <span class="meta-label">Visibility</span>
+                    <strong>Choose public hikes for discovery or friends-only for tighter coordination.</strong>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Route sharing</span>
+                    <strong>Attach a GPX file to make the detail page feel richer in demos.</strong>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Descriptions</span>
+                    <strong>Set expectations early so join requests and carpools are more relevant.</strong>
+                </div>
+            </div>
+        </aside>
+    </section>
 {% endblock %}

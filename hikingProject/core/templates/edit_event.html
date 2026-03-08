@@ -1,14 +1,42 @@
 {% extends "base.html" %}
 
-{% block title %}
-Edit Hike
-{% endblock %}
+{% block title %}Edit {{ hike.title }} | TrailCircle{% endblock %}
 
 {% block content %}
-<h1>Edit {{ hike.title }}</h1>
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Save Changes</button>
-</form>
+    <section class="form-split">
+        <article class="form-card">
+            <span class="eyebrow">Refine the plan</span>
+            <h1 class="form-title">Edit {{ hike.title }}</h1>
+            <p class="supporting-copy">Update the details participants see on the hike page. Approved hikers will continue using the same flow after you save.</p>
+
+            <form method="post" enctype="multipart/form-data" class="form-layout">
+                {% csrf_token %}
+                {% include "partials/form_fields.html" with form=form %}
+                <div class="button-row">
+                    <button class="btn btn-primary" type="submit">Save changes</button>
+                    <a class="btn btn-outline" href="{% url 'detail_hike' hike.id %}">Back to hike</a>
+                </div>
+            </form>
+        </article>
+
+        <aside class="panel">
+            <span class="eyebrow eyebrow--warm">Current event</span>
+            <h2 class="card-title">{{ hike.title }}</h2>
+            <p class="card-copy">Use this edit view to polish the experience without changing the existing event flow for users.</p>
+            <div class="stack">
+                <div class="meta-item">
+                    <span class="meta-label">Date</span>
+                    <strong>{{ hike.date|date:"M j, Y" }} at {{ hike.time|time:"g:i A" }}</strong>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Location</span>
+                    <strong>{{ hike.location }}</strong>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Visibility</span>
+                    <strong>{{ hike.get_visibility_display }}</strong>
+                </div>
+            </div>
+        </aside>
+    </section>
 {% endblock %}

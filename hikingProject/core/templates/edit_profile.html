@@ -1,74 +1,55 @@
 {% extends "base.html" %}
 
+{% block title %}Edit Profile | TrailCircle{% endblock %}
+
 {% block content %}
+    <section class="form-split">
+        <article class="form-card">
+            <span class="eyebrow">Profile settings</span>
+            <h1 class="form-title">Edit your profile</h1>
+            <p class="supporting-copy">Keep your hiking preferences accurate so your profile feels trustworthy across event discovery, friendships, and carpools.</p>
 
-<div class="edit-profile-page">
-    <div class="edit-profile-card">
-        <h1>Edit Profile</h1>
-
-        <form method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-
-            <div class="form-group">
-                <label>Name</label>
-                {{ form.name }}
-            </div>
-
-            <div class="form-group">
-                <label>Location</label>
-                {{ form.location }}
-            </div>
-
-            <div class="form-group">
-                <label>Gender</label>
-                {{ form.gender }}
-            </div>
-
-            <div class="form-group">
-                <label>Experience Level</label>
-                {{ form.experience_level }}
-            </div>
-
-            <div class="form-group">
-                <label>Pace</label>
-                {{ form.pace }}
-            </div>
-
-            <div class="form-group">
-                <label>Age</label>
-                {{ form.age }}
-            </div>
-
-            <div class="form-group">
-                <label>Profile Picture</label>
-                {{ form.profile_picture }}
-            </div>
-
-            <div class="form-actions">
-                <button type="submit">Save Changes</button>
-                <a href="{% url 'detail_user' user.id %}">Cancel</a>
-            </div>
-        </form>
-
-        <hr>
-
-        <div class="account-actions">
-            <h2>Account Settings</h2>
-
-            <p>
-                <a href="{% url 'password_change' %}" class="secondary-button">
-                    Change Password
-                </a>
-            </p>
-
-            <form method="POST" action="{% url 'delete_account' %}">
+            <form method="post" enctype="multipart/form-data" class="form-layout">
                 {% csrf_token %}
-                <button type="submit" class="danger-button">
-                    Delete Account
-                </button>
+                {% include "partials/form_fields.html" with form=form %}
+                <div class="button-row">
+                    <button class="btn btn-primary" type="submit">Save changes</button>
+                    <a class="btn btn-outline" href="{% url 'detail_user' user.id %}">Cancel</a>
+                </div>
             </form>
-        </div>
-    </div>
-</div>
+        </article>
 
+        <aside class="stack">
+            <article class="panel">
+                <span class="eyebrow eyebrow--warm">Profile preview</span>
+                <div class="identity-row">
+                    {% if user.profile_picture %}
+                        <img class="avatar avatar--large" src="{{ user.profile_picture.url }}" alt="{{ user.username }} profile picture">
+                    {% else %}
+                        <div class="avatar-placeholder avatar-placeholder--large">{{ user.username|slice:":1"|upper }}</div>
+                    {% endif %}
+                    <div class="identity-copy">
+                        <h2 class="card-title">{{ user.name|default:user.username }}</h2>
+                        <p>@{{ user.username }}</p>
+                    </div>
+                </div>
+                <div class="tag-row">
+                    <span class="status-pill">{{ user.get_experience_level_display }}</span>
+                    <span class="status-pill status-pill--pending">{{ user.get_pace_display }} pace</span>
+                </div>
+            </article>
+
+            <article class="panel">
+                <span class="eyebrow">Account settings</span>
+                <h2 class="card-title">Security and account actions</h2>
+                <div class="stack">
+                    <a class="btn btn-secondary" href="{% url 'password_change' %}">Change password</a>
+                    <form method="post" action="{% url 'delete_account' %}">
+                        {% csrf_token %}
+                        <button class="btn btn-danger" type="submit">Delete account</button>
+                    </form>
+                </div>
+            </article>
+        </aside>
+    </section>
 {% endblock %}

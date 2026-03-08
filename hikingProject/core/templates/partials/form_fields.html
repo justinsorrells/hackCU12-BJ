@@ -1,0 +1,36 @@
+{% if form.non_field_errors %}
+    <div class="form-alert form-alert--error">
+        {% for error in form.non_field_errors %}
+            <p>{{ error }}</p>
+        {% endfor %}
+    </div>
+{% endif %}
+
+{% for hidden_field in form.hidden_fields %}
+    {{ hidden_field }}
+{% endfor %}
+
+<div class="form-grid">
+    {% for field in form.visible_fields %}
+        <div class="form-field {% if field.errors %}form-field--error{% endif %}{% if field.name == 'description' or field.name == 'notes' or field.name == 'details' or field.name == 'content' or field.name == 'profile_picture' or field.name == 'gpx_file' %} form-field--full{% endif %}">
+            {% if field.label %}
+                <label for="{{ field.id_for_label }}">
+                    {{ field.label }}
+                    {% if field.field.required %}
+                        <span class="form-required">*</span>
+                    {% endif %}
+                </label>
+            {% endif %}
+
+            {{ field }}
+
+            {% if field.help_text %}
+                <div class="form-help">{{ field.help_text|safe }}</div>
+            {% endif %}
+
+            {% for error in field.errors %}
+                <p class="form-error">{{ error }}</p>
+            {% endfor %}
+        </div>
+    {% endfor %}
+</div>

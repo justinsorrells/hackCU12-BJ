@@ -1,34 +1,77 @@
-<nav style="display:flex; justify-content:space-between; background:#2c3e50; padding:12px 20px;">
+{% with url_name=request.resolver_match.url_name %}
+    <header class="site-header">
+        <div class="page-container">
+            <div class="site-header__inner">
+                <a class="brand" href="{% if user.is_authenticated %}{% url 'home' %}{% else %}{% url 'login' %}{% endif %}">
+                    <span class="brand-mark">TC</span>
+                    <span class="brand-copy">
+                        <strong>TrailCircle</strong>
+                        <span>Hikes, friends, and ride boards</span>
+                    </span>
+                </a>
 
-    <div>
-        <a href="{% url 'home' %}" style="color:white; margin-right:20px;">Home</a>
-        <a href="{% url 'search' %}" style="color:white; margin-right:20px;">Search</a>
+                {% if user.is_authenticated %}
+                    <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="primary-nav">
+                        Menu
+                    </button>
 
-        {% if user.is_authenticated %}
-	<a href="{% url 'create_event' %}" style="color:white;">Create</a>
-        {% endif %}
-    </div>
+                    <div class="nav-cluster">
+                        <nav class="primary-nav" id="primary-nav" data-nav-menu>
+                            <a class="nav-link {% if url_name == 'home' %}is-active{% endif %}" href="{% url 'home' %}">Home</a>
+                            <a class="nav-link {% if url_name == 'search' %}is-active{% endif %}" href="{% url 'search' %}">Discover</a>
+                            <a class="nav-link {% if url_name == 'create_event' %}is-active{% endif %}" href="{% url 'create_event' %}">Create hike</a>
+                            <a class="nav-link {% if url_name == 'notifications' %}is-active{% endif %}" href="{% url 'notifications' %}">Notifications</a>
+                            <a class="nav-link {% if url_name == 'detail_user' or url_name == 'edit_profile' or url_name == 'password_change' or url_name == 'password_change_done' %}is-active{% endif %}" href="{% url 'detail_user' user.id %}">Profile</a>
+                        </nav>
 
-    <div>
-        {% if user.is_authenticated %}
-            <a href="{% url 'detail_user' user.id %}" style="color:white; margin-right:15px;">
-                {{ user.username }}
+                        <div class="header-actions">
+                            <a class="pill-link" href="{% url 'notifications' %}">
+                                Alerts
+                                {% if unread_notifications_count > 0 %}
+                                    <span class="pill-badge">{{ unread_notifications_count }}</span>
+                                {% endif %}
+                            </a>
+                            <a class="profile-chip" href="{% url 'detail_user' user.id %}">@{{ user.username }}</a>
+                            <form method="post" action="{% url 'logout' %}">
+                                {% csrf_token %}
+                                <button class="btn btn-ghost btn-small" type="submit">Log out</button>
+                            </form>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="nav-cluster nav-cluster--end">
+                        <nav class="primary-nav primary-nav--public is-open">
+                            <a class="nav-link {% if url_name == 'login' %}is-active{% endif %}" href="{% url 'login' %}">Log in</a>
+                            <a class="btn btn-primary btn-small" href="{% url 'register' %}">Create account</a>
+                        </nav>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    {% if user.is_authenticated %}
+        <nav class="mobile-nav" aria-label="Primary">
+            <a class="mobile-nav__item {% if url_name == 'home' %}is-active{% endif %}" href="{% url 'home' %}">
+                <strong>Home</strong>
+                <span>Dashboard</span>
             </a>
-
-            <form method="post" action="{% url 'logout' %}" style="display:inline;">
-                {% csrf_token %}
-                <button type="submit">Logout</button>
-            </form>
-	    <a href="{% url 'notifications' %}">
-		    Notifications
-		    {% if unread_notifications_count > 0 %}
-			({{ unread_notifications_count }})
-		    {% endif %}
-</a>
-        {% else %}
-            <a href="{% url 'login' %}" style="color:white; margin-right:15px;">Login</a>
-            <a href="{% url 'register' %}" style="color:white;">Register</a>
-        {% endif %}
-    </div>
-
-</nav>
+            <a class="mobile-nav__item {% if url_name == 'search' %}is-active{% endif %}" href="{% url 'search' %}">
+                <strong>Search</strong>
+                <span>Discover</span>
+            </a>
+            <a class="mobile-nav__item {% if url_name == 'create_event' %}is-active{% endif %}" href="{% url 'create_event' %}">
+                <strong>Create</strong>
+                <span>New hike</span>
+            </a>
+            <a class="mobile-nav__item {% if url_name == 'notifications' %}is-active{% endif %}" href="{% url 'notifications' %}">
+                <strong>Alerts</strong>
+                <span>{% if unread_notifications_count > 0 %}{{ unread_notifications_count }} new{% else %}Inbox{% endif %}</span>
+            </a>
+            <a class="mobile-nav__item {% if url_name == 'detail_user' or url_name == 'edit_profile' or url_name == 'password_change' or url_name == 'password_change_done' %}is-active{% endif %}" href="{% url 'detail_user' user.id %}">
+                <strong>Profile</strong>
+                <span>@{{ user.username }}</span>
+            </a>
+        </nav>
+    {% endif %}
+{% endwith %}

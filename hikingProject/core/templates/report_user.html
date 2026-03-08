@@ -1,14 +1,28 @@
 {% extends "base.html" %}
 
-{% block title %}
-Report User
-{% endblock %}
+{% block title %}Report {{ reported_user.username }} | TrailCircle{% endblock %}
 
 {% block content %}
-<h1>Report {{ reported_user.username }}</h1>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Submit Report</button>
-</form>
+    <section class="form-split">
+        <article class="form-card">
+            <span class="eyebrow eyebrow--warm">Report profile</span>
+            <h1 class="form-title">Report @{{ reported_user.username }}</h1>
+            <p class="supporting-copy">Use this form to flag harassment, fake accounts, or other behavior that should be reviewed by moderators.</p>
+
+            <form method="post" class="form-layout">
+                {% csrf_token %}
+                {% include "partials/form_fields.html" with form=form %}
+                <div class="button-row">
+                    <button class="btn btn-warm" type="submit">Submit report</button>
+                    <a class="btn btn-outline" href="{% url 'detail_user' reported_user.id %}">Cancel</a>
+                </div>
+            </form>
+        </article>
+
+        <aside class="panel">
+            <span class="eyebrow">Why this matters</span>
+            <h2 class="card-title">Clean social spaces build trust.</h2>
+            <p class="card-copy">Reports help keep hike coordination, messaging, and community discovery safe for everyone using the app.</p>
+        </aside>
+    </section>
 {% endblock %}

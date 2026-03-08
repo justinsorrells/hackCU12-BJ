@@ -1,17 +1,33 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Sign Up</title>
-</head>
-<body>
-    <h1>Create Account</h1>
+{% extends "base.html" %}
 
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Sign Up</button>
-    </form>
+{% block title %}Create Account | TrailCircle{% endblock %}
+{% block body_class %}auth-mode{% endblock %}
 
-    <p>Already have an account? <a href="{% url 'login' %}">Log in</a></p>
-</body>
-</html>
+{% block content %}
+    <section class="auth-shell">
+        <article class="auth-promo">
+            <span class="eyebrow">Join the community</span>
+            <h1 class="hero-title">Create a hiking profile that feels like a real product, not a spreadsheet.</h1>
+            <p>Set your pace, experience, and location once, then use that profile across events, friendships, ride boards, and hike threads.</p>
+            <ul>
+                <li>Build a polished social profile with hiking preferences</li>
+                <li>Join group hikes, manage approvals, and coordinate messaging</li>
+                <li>Access carpool planning and notifications in the same flow</li>
+            </ul>
+        </article>
+
+        <article class="form-card auth-card">
+            <span class="eyebrow eyebrow--warm">New account</span>
+            <h2 class="auth-title">Create your TrailCircle account</h2>
+            <p class="supporting-copy">Start with a clear profile so future hikes, carpools, and friend connections feel personal right away.</p>
+
+            <form method="post" enctype="multipart/form-data" class="form-layout">
+                {% csrf_token %}
+                {% include "partials/form_fields.html" with form=form %}
+                <button class="btn btn-primary" type="submit">Create account</button>
+            </form>
+
+            <p class="auth-links">Already have an account? <a class="text-link" href="{% url 'login' %}">Log in</a>.</p>
+        </article>
+    </section>
+{% endblock %}

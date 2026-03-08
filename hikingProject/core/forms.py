@@ -1,12 +1,25 @@
+import datetime as dt
+
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import *
-import datetime as dt
+
+from .models import CarpoolOffer, HikingEvent, HikeMessage, User
 
 class RegisterForm(UserCreationForm):
     class Meta:
         model = User
-        fields = ("username", "password1", "password2", "gender",  "name", "location", "experience_level", "profile_picture", "pace")
+        fields = (
+            "username",
+            "password1",
+            "password2",
+            "name",
+            "location",
+            "age",
+            "gender",
+            "experience_level",
+            "pace",
+            "profile_picture",
+        )
 
 class HikingEventForm(forms.ModelForm):
     class Meta:
@@ -85,14 +98,11 @@ class HikingEventForm(forms.ModelForm):
         return max_participants
 
     def clean_date(self):
-        date = self.cleaned_data.get("date") 
+        date = self.cleaned_data.get("date")
         today = dt.date.today()
         if date.year < today.year or (date.year == today.year and date.month < today.month) or (date.year == today.year and date.month == today.month and date.day < today.day):
             raise forms.ValidationError("Must choose future date")
         return date
-    
-from django import forms
-from .models import HikingEvent
 
 
 class SearchForm(forms.Form):
@@ -179,6 +189,7 @@ class EditProfileForm(forms.ModelForm):
         fields = (
             "name",
             "location",
+            "age",
             "gender",
             "experience_level",
             "profile_picture",
@@ -204,7 +215,7 @@ class ReportUserForm(forms.Form):
     ])
     details = forms.CharField(
         required=False,
-        widget=forms.Textarea(attrs={"rows": 4})
+        widget=forms.Textarea(attrs={"rows": 4, "placeholder": "Share any context that would help with moderation."})
     )
 
 class HikeMessageForm(forms.ModelForm):

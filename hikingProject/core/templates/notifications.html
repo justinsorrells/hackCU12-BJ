@@ -1,21 +1,64 @@
 {% extends "base.html" %}
 
-{% block title %}
-Notifications
-{% endblock %}
+{% block title %}Notifications | TrailCircle{% endblock %}
 
 {% block content %}
-{% for notification in notifications %}
-    <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;">
-        <p>{{ notification.message }}</p>
-	{% if notification.notification_type == "hike_message" %}
-		<a href="{% url 'hike_thread' notification.hike.id %}">View message</a>
-        {% elif notification.hike %}
-            <a href="{% url 'detail_hike' notification.hike.id %}">View hike</a>
+    <section class="hero">
+        <article class="hero-card hero-card--dark">
+            <span class="eyebrow">Inbox</span>
+            <h1 class="hero-title">Notifications that are easy to skim on the go.</h1>
+            <p>Join requests, friend activity, thread updates, and carpool decisions all surface here in one cleaner, more readable feed.</p>
+        </article>
+    </section>
+
+    <section class="section">
+        <div class="section-header">
+            <div>
+                <span class="eyebrow">Recent activity</span>
+                <h2 class="section-title">Everything that needs attention</h2>
+                <p class="section-subtitle">Notifications are marked read after this page opens, but every action remains one tap away.</p>
+            </div>
+        </div>
+
+        {% if notifications %}
+            <div class="stack">
+                {% for notification in notifications %}
+                    <article class="card notification-card">
+                        <div class="request-row__header">
+                            <div class="tag-row">
+                                {% if notification.notification_type == "hike_message" %}
+                                    <span class="status-pill">Thread update</span>
+                                {% elif notification.notification_type == "friend_request" %}
+                                    <span class="status-pill status-pill--pending">Friend request</span>
+                                {% elif notification.notification_type == "participant_removed" %}
+                                    <span class="status-pill status-pill--alert">Participant update</span>
+                                {% else %}
+                                    <span class="status-pill status-pill--soft">Activity</span>
+                                {% endif %}
+                            </div>
+                            <span class="subtle">{{ notification.created_at|date:"M j, Y" }} at {{ notification.created_at|time:"g:i A" }}</span>
+                        </div>
+
+                        <h3 class="card-title">{{ notification.message }}</h3>
+
+                        <div class="button-row">
+                            {% if notification.notification_type == "hike_message" and notification.hike %}
+                                <a class="btn btn-primary btn-small" href="{% url 'hike_thread' notification.hike.id %}">Open thread</a>
+                            {% elif notification.hike %}
+                                <a class="btn btn-primary btn-small" href="{% url 'detail_hike' notification.hike.id %}">View hike</a>
+                            {% elif notification.sender %}
+                                <a class="btn btn-primary btn-small" href="{% url 'detail_user' notification.sender.id %}">View profile</a>
+                            {% endif %}
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <span class="eyebrow eyebrow--warm">All clear</span>
+                <h3 class="card-title">No notifications right now.</h3>
+                <p>New activity from hikes, carpools, and friends will show up here as soon as it happens.</p>
+            </div>
         {% endif %}
-        <small>{{ notification.created_at }}</small>
-    </div>
-{% empty %}
-    <p>No notifications.</p>
-{% endfor %}
+    </section>
 {% endblock %}

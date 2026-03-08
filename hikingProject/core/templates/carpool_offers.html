@@ -1,115 +1,175 @@
 {% extends "base.html" %}
 
-{% block title %}Carpool Offers{% endblock %}
+{% block title %}Carpools | TrailCircle{% endblock %}
 
 {% block content %}
-
-<div style="max-width: 900px; margin: 0 auto;">
-    <h1>Carpool Offers</h1>
-
-    <div style="margin-bottom: 24px; padding: 16px; border: 1px solid #ccc; border-radius: 8px;">
-        <h2 style="margin: 0 0 8px 0;">{{ hike.title }}</h2>
-        <p style="margin: 4px 0;">{{ hike.location }}</p>
-        <p style="margin: 4px 0;">{{ hike.date }} at {{ hike.time }}</p>
-    </div>
-
-    <div style="margin-bottom: 24px;">
-        {% if not user_offer %}
-            <a href="{% url 'offer_carpool' hike.id %}">
-                <button type="button">Offer a Carpool</button>
-            </a>
-        {% endif %}
-    </div>
-
-    {% if carpool_offers %}
-        {% for offer in carpool_offers %}
-            <div style="border: 1px solid #ccc; border-radius: 8px; padding: 18px; margin-bottom: 20px;">
-
-                <div style="margin-bottom: 14px;">
-                    <h3 style="margin: 0 0 10px 0;">
-                        Driver: {{ offer.driver.name|default:offer.driver.username }}
-                    </h3>
-
-                    <p style="margin: 4px 0;"><strong>Capacity:</strong> {{ offer.capacity }}</p>
-                    <p style="margin: 4px 0;"><strong>Seats Remaining:</strong> {{ offer.seats_remaining }}</p>
-                    <p style="margin: 4px 0;"><strong>Departure Location:</strong> {{ offer.departure_location|default:"Not provided" }}</p>
-                    <p style="margin: 4px 0;"><strong>Departure Time:</strong> {{ offer.departure_time|default:"Not provided" }}</p>
-                    <p style="margin: 4px 0;"><strong>Contact Info:</strong> {{ offer.contact_info }}</p>
-                    <p style="margin: 4px 0;"><strong>Notes:</strong> {{ offer.notes|default:"None" }}</p>
+    <section class="hero">
+        <article class="hero-card hero-card--dark">
+            <span class="eyebrow">Ride board</span>
+            <h1 class="hero-title">Carpools for {{ hike.title }}</h1>
+            <p>Keep transportation planning inside the hike flow so participants can join, approve, and coordinate rides without leaving the product.</p>
+            <div class="detail-stat-grid">
+                <div class="detail-stat">
+                    <span class="meta-label">Hike</span>
+                    <strong>{{ hike.title }}</strong>
                 </div>
-
-                <div style="margin-bottom: 14px;">
-                    <h4 style="margin: 0 0 8px 0;">Ride Requests</h4>
-                    <ul style="margin: 0; padding-left: 20px;">
-                        {% for ride_request in offer.ride_requests.all %}
-                            <li style="margin-bottom: 4px;">
-                                {{ ride_request.rider.name|default:ride_request.rider.username }}
-                                — {{ ride_request.status }} 
-                                {% if ride_request.status == "pending" and request.user == offer.driver %}
-                                    <form method="post" action="{% url 'approve_carpool_request' ride_request.id %}" style="display: inline;">
-                                        {% csrf_token %}
-                                        <button type="submit">Approve</button>
-                                    </form>
-
-                                    <form method="post" action="{% url 'reject_carpool_request' ride_request.id %}" style="display: inline;">
-                                        {% csrf_token %}
-                                        <button type="submit">Reject</button>
-                                    </form>
-                                {% endif %}
-                                {% if ride_request.status == "approved" and request.user == offer.driver %}
-                                    <form method="post" action="{% url 'remove_carpool_participant' offer.id ride_request.rider.id %}" style="display: inline;">
-                                        {% csrf_token %}
-                                        <button type="submit">Remove</button>
-                                    </form>
-                                {% endif %}
-                            </li>
-                        {% empty %}
-                            <li>No ride requests yet.</li>
-                        {% endfor %}
-                    </ul>
+                <div class="detail-stat">
+                    <span class="meta-label">Location</span>
+                    <strong>{{ hike.location }}</strong>
                 </div>
-
-                <div>
-                    {% if request.user == offer.driver %}
-                        <a href="{% url 'edit_carpool_offer' offer.id %}">
-                            <button type="button">Edit</button>
-                        </a>
-
-                        <form method="post" action="{% url 'delete_carpool_offer' offer.id %}" style="display: inline;">
-                            {% csrf_token %}
-                            <button type="submit">Remove My Carpool</button>
-                        </form>
-
-                    {% elif offer.user_request %}
-                        {% if offer.user_request.status == "pending" %}
-                            <form method="post" action="{% url 'cancel_carpool_request' offer.user_request.id %}" style="display: inline;">
-                                {% csrf_token %}
-                                <button type="submit">Cancel Request</button>
-                            </form>
-                        {% endif %}
-                        {% if offer.user_request.status == "approved" %}
-                            <form method="post" action="{% url 'leave_carpool' offer.id %}" style="display: inline;">
-                                {% csrf_token %}
-                                <button type="submit">Leave Carpool</button>
-                            </form>
-                        {% endif %}
-                    {% elif not user_offer %}
-                        <form method="post" action="{% url 'request_carpool' offer.id %}" style="display: inline;">
-                            {% csrf_token %}
-                            <button type="submit">Join This Carpool</button>
-                        </form>
-                    {% endif %}
+                <div class="detail-stat">
+                    <span class="meta-label">When</span>
+                    <strong>{{ hike.date|date:"M j, Y" }} at {{ hike.time|time:"g:i A" }}</strong>
                 </div>
-
             </div>
-        {% endfor %}
-    {% else %}
-        <p>No carpool offers yet.</p>
-    {% endif %}
+            <div class="hero-actions">
+                {% if not user_offer %}
+                    <a class="btn btn-primary" href="{% url 'offer_carpool' hike.id %}">Offer a carpool</a>
+                {% endif %}
+                <a class="btn btn-secondary" href="{% url 'detail_hike' hike.id %}">Back to hike</a>
+            </div>
+        </article>
 
-    <p style="margin-top: 24px;">
-        <a href="{% url 'detail_hike' hike.id %}">Back to hike</a>
-    </p>
-</div>
+        <aside class="panel">
+            <span class="eyebrow eyebrow--warm">Overview</span>
+            <h2 class="card-title">Current ride options</h2>
+            <div class="stack">
+                <div class="meta-item">
+                    <span class="meta-label">Offers</span>
+                    <strong>{{ carpool_offers|length }}</strong>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Your status</span>
+                    <strong>{% if user_offer %}You are offering a carpool{% else %}You are not offering a carpool{% endif %}</strong>
+                </div>
+            </div>
+        </aside>
+    </section>
 
+    <section class="section">
+        {% if carpool_offers %}
+            <div class="stack">
+                {% for offer in carpool_offers %}
+                    <article class="card carpool-card">
+                        <div class="section-header">
+                            <div>
+                                <span class="eyebrow">Driver</span>
+                                <h2 class="card-title">{{ offer.driver.name|default:offer.driver.username }}</h2>
+                                <p class="section-subtitle">@{{ offer.driver.username }}</p>
+                            </div>
+                            <div class="tag-row">
+                                <span class="status-pill">{{ offer.seats_remaining }} seat{{ offer.seats_remaining|pluralize }} left</span>
+                                <span class="status-pill status-pill--soft">Capacity {{ offer.capacity }}</span>
+                            </div>
+                        </div>
+
+                        <div class="meta-grid">
+                            <div class="meta-item">
+                                <span class="meta-label">Departure location</span>
+                                <strong>{{ offer.departure_location|default:"Not provided" }}</strong>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Departure time</span>
+                                <strong>{{ offer.departure_time|default:"Not provided" }}</strong>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Contact</span>
+                                <strong>{{ offer.contact_info }}</strong>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Notes</span>
+                                <strong>{{ offer.notes|default:"No additional notes." }}</strong>
+                            </div>
+                        </div>
+
+                        <div class="section space-top">
+                            <span class="eyebrow eyebrow--warm">Ride requests</span>
+                            {% if offer.ride_requests.all %}
+                                <ul class="resource-list">
+                                    {% for ride_request in offer.ride_requests.all %}
+                                        <li class="ride-request-row">
+                                            <div>
+                                                <a class="person-link" href="{% url 'detail_user' ride_request.rider.id %}">{{ ride_request.rider.name|default:ride_request.rider.username }}</a>
+                                                <p class="supporting-copy">@{{ ride_request.rider.username }}</p>
+                                            </div>
+                                            <div class="inline-actions">
+                                                {% if ride_request.status == "pending" %}
+                                                    <span class="status-pill status-pill--pending">Pending</span>
+                                                {% elif ride_request.status == "approved" %}
+                                                    <span class="status-pill">Approved</span>
+                                                {% else %}
+                                                    <span class="status-pill status-pill--soft">{{ ride_request.status|title }}</span>
+                                                {% endif %}
+
+                                                {% if ride_request.status == "pending" and request.user == offer.driver %}
+                                                    <form method="post" action="{% url 'approve_carpool_request' ride_request.id %}">
+                                                        {% csrf_token %}
+                                                        <button class="btn btn-primary btn-small" type="submit">Approve</button>
+                                                    </form>
+                                                    <form method="post" action="{% url 'reject_carpool_request' ride_request.id %}">
+                                                        {% csrf_token %}
+                                                        <button class="btn btn-outline btn-small" type="submit">Reject</button>
+                                                    </form>
+                                                {% endif %}
+
+                                                {% if ride_request.status == "approved" and request.user == offer.driver %}
+                                                    <form method="post" action="{% url 'remove_carpool_participant' offer.id ride_request.rider.id %}">
+                                                        {% csrf_token %}
+                                                        <button class="btn btn-outline btn-small" type="submit">Remove</button>
+                                                    </form>
+                                                {% endif %}
+                                            </div>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <div class="empty-state">
+                                    <h3 class="card-title">No ride requests yet.</h3>
+                                    <p>Requests will appear here as participants ask to join this carpool.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="button-row">
+                            {% if request.user == offer.driver %}
+                                <a class="btn btn-primary btn-small" href="{% url 'edit_carpool_offer' offer.id %}">Edit offer</a>
+                                <form method="post" action="{% url 'delete_carpool_offer' offer.id %}">
+                                    {% csrf_token %}
+                                    <button class="btn btn-danger btn-small" type="submit">Remove my carpool</button>
+                                </form>
+                            {% elif offer.user_request %}
+                                {% if offer.user_request.status == "pending" %}
+                                    <form method="post" action="{% url 'cancel_carpool_request' offer.user_request.id %}">
+                                        {% csrf_token %}
+                                        <button class="btn btn-secondary btn-small" type="submit">Cancel request</button>
+                                    </form>
+                                {% elif offer.user_request.status == "approved" %}
+                                    <form method="post" action="{% url 'leave_carpool' offer.id %}">
+                                        {% csrf_token %}
+                                        <button class="btn btn-outline btn-small" type="submit">Leave carpool</button>
+                                    </form>
+                                {% endif %}
+                            {% elif not user_offer %}
+                                <form method="post" action="{% url 'request_carpool' offer.id %}">
+                                    {% csrf_token %}
+                                    <button class="btn btn-primary btn-small" type="submit">Request this ride</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <span class="eyebrow eyebrow--warm">No ride offers yet</span>
+                <h3 class="card-title">Be the first driver for this hike.</h3>
+                <p>Create a carpool offer so riders can request seats directly from the hike page.</p>
+                {% if not user_offer %}
+                    <div class="hero-actions justify-center">
+                        <a class="btn btn-primary" href="{% url 'offer_carpool' hike.id %}">Offer a carpool</a>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    </section>
 {% endblock %}

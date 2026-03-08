@@ -1,0 +1,45 @@
+<article class="card hike-card">
+    <div class="status-row">
+        <span class="eyebrow">Upcoming hike</span>
+        {% if hike.organizer == user %}
+            <span class="status-pill status-pill--good">Organizer</span>
+        {% else %}
+            <span class="status-pill status-pill--soft">Joined</span>
+        {% endif %}
+        <span class="status-pill status-pill--pending">{{ hike.get_visibility_display }}</span>
+    </div>
+
+    <h3 class="card-title">
+        <a href="{% url 'detail_hike' hike.id %}">{{ hike.title }}</a>
+    </h3>
+
+    <p class="card-copy">
+        {{ hike.description|default:"Lock in the route, share the details, and keep the group coordinated from one place."|truncatechars:140 }}
+    </p>
+
+    <div class="meta-grid">
+        <div class="meta-item">
+            <span class="meta-label">When</span>
+            <strong>{{ hike.date|date:"M j, Y" }} at {{ hike.time|time:"g:i A" }}</strong>
+        </div>
+        <div class="meta-item">
+            <span class="meta-label">Where</span>
+            <strong>{{ hike.location }}</strong>
+        </div>
+        <div class="meta-item">
+            <span class="meta-label">Pace</span>
+            <strong>{{ hike.get_pace_display }}</strong>
+        </div>
+        <div class="meta-item">
+            <span class="meta-label">Distance</span>
+            <strong>{{ hike.mileage }} miles</strong>
+        </div>
+    </div>
+
+    <div class="button-row space-top">
+        <a class="btn btn-primary btn-small" href="{% url 'detail_hike' hike.id %}">View hike</a>
+        {% if show_ride_link %}
+            <a class="btn btn-secondary btn-small" href="{% url 'view_carpool_offers' hike.id %}">Ride board</a>
+        {% endif %}
+    </div>
+</article>

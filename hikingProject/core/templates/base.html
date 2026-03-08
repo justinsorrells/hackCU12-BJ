@@ -1,16 +1,46 @@
+{% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>{% block title %}Hiking App{% endblock %}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#003135">
+    <title>{% block title %}TrailCircle{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'core/css/app.css' %}">
+    {% block extra_head %}{% endblock %}
 </head>
 
-<body>
+<body class="{% if user.is_authenticated %}has-mobile-nav {% endif %}{% block body_class %}{% endblock %}">
+    <div class="app-backdrop"></div>
 
-{% include "partials/navbar.html" %}
+    {% include "partials/navbar.html" %}
 
-<main style="padding:30px;">
-    {% block content %}{% endblock %}
-</main>
+    <main class="page-shell">
+        <div class="page-container">
+            {% if messages %}
+                <div class="message-stack">
+                    {% for message in messages %}
+                        <div class="message message--{{ message.tags|default:'info' }}">
+                            <p>{{ message }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
 
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="page-container">
+            <div class="site-footer__inner">
+                <p><strong>TrailCircle</strong> keeps hikes, crews, ride boards, and notifications in one place.</p>
+                <p>Designed for fast planning on mobile and clean demos on larger screens.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{% static 'core/js/app.js' %}" defer></script>
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

@@ -1,30 +1,79 @@
 {% extends "base.html" %}
 
-{% block title %}
-{% endblock %}
+{% block title %}{{ hike.title }} Thread | TrailCircle{% endblock %}
 
 {% block content %}
-<h1>{{ hike.title }} Discussion</h1>
+    <section class="thread-layout">
+        <article class="card thread-card">
+            <span class="eyebrow">Hike thread</span>
+            <h1 class="section-title">{{ hike.title }} discussion</h1>
+            <p class="section-subtitle">Messages stay scoped to approved participants and the organizer, keeping coordination focused and easy to follow.</p>
 
-<p>
-    <a href="{% url 'detail_hike' hike.id %}">Back to hike</a>
-</p>
+            {% if thread_messages %}
+                <div class="thread-stream">
+                    {% for message in thread_messages %}
+                        <div class="thread-message {% if message.user == request.user %}thread-message--self{% endif %}">
+                            <div class="thread-bubble">
+                                <div class="thread-meta">
+                                    <strong>{{ message.user.name|default:message.user.username }}</strong>
+                                    <span>{{ message.created_at|date:"M j" }} at {{ message.created_at|time:"g:i A" }}</span>
+                                </div>
+                                <p class="thread-body">{{ message.content }}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <span class="eyebrow eyebrow--warm">Start the thread</span>
+                    <h3 class="card-title">No messages yet.</h3>
+                    <p>Use the composer below to post the first update for the group.</p>
+                </div>
+            {% endif %}
+        </article>
 
-<div>
-    {% for message in messages %}
-        <div style="margin-bottom: 1rem; padding: 0.5rem; border: 1px solid #ccc;">
-            <strong>{{ message.user.username }}</strong>
-            <small>{{ message.created_at }}</small>
-            <p>{{ message.content }}</p>
-        </div>
-    {% empty %}
-        <p>No messages yet.</p>
-    {% endfor %}
-</div>
+        <aside class="stack">
+            <article class="panel">
+                <span class="eyebrow eyebrow--warm">Trip summary</span>
+                <h2 class="card-title">{{ hike.title }}</h2>
+                <div class="meta-grid">
+                    <div class="meta-item">
+                        <span class="meta-label">When</span>
+                        <strong>{{ hike.date|date:"M j, Y" }} at {{ hike.time|time:"g:i A" }}</strong>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Where</span>
+                        <strong>{{ hike.location }}</strong>
+                    </div>
+                </div>
+                <div class="button-row space-top">
+                    <a class="btn btn-secondary" href="{% url 'detail_hike' hike.id %}">Back to hike</a>
+                    <a class="btn btn-outline" href="{% url 'view_carpool_offers' hike.id %}">Ride board</a>
+                </div>
+            </article>
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Send</button>
-</form>
+            <article class="form-card">
+                <span class="eyebrow">Post update</span>
+                <h2 class="card-title">Send a message</h2>
+                <form method="post" class="thread-composer">
+                    {% csrf_token %}
+                    {% if form.non_field_errors %}
+                        <div class="form-alert form-alert--error">
+                            {% for error in form.non_field_errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="form-field {% if form.content.errors %}form-field--error{% endif %}">
+                        <label for="{{ form.content.id_for_label }}">Message</label>
+                        {{ form.content }}
+                        {% for error in form.content.errors %}
+                            <p class="form-error">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    <button class="btn btn-primary" type="submit">Send message</button>
+                </form>
+            </article>
+        </aside>
+    </section>
 {% endblock %}

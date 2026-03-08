@@ -1,64 +1,48 @@
 {% extends "base.html" %}
 
-{% block title %}Edit Carpool{% endblock %}
+{% block title %}Edit Carpool | TrailCircle{% endblock %}
 
 {% block content %}
+    <section class="form-split">
+        <article class="form-card">
+            <span class="eyebrow">Ride planning</span>
+            <h1 class="form-title">Edit your carpool</h1>
+            <p class="supporting-copy">Update the details riders see without breaking the existing approval flow.</p>
 
-<div style="max-width: 600px; margin: 0 auto;">
-    <h1>Edit Your Carpool</h1>
+            <form method="post" class="form-layout">
+                {% csrf_token %}
+                {% include "partials/form_fields.html" with form=form %}
+                <div class="button-row">
+                    <button class="btn btn-primary" type="submit">Save changes</button>
+                    <a class="btn btn-outline" href="{% url 'view_carpool_offers' hike.id %}">Back to carpools</a>
+                </div>
+            </form>
+        </article>
 
-    <p style="margin-bottom: 24px;">
-        <strong>{{ hike.title }}</strong><br>
-        {{ hike.location }}<br>
-        {{ hike.date }} at {{ hike.time }}
-    </p>
+        <aside class="stack">
+            <article class="panel">
+                <span class="eyebrow eyebrow--warm">Hike summary</span>
+                <h2 class="card-title">{{ hike.title }}</h2>
+                <div class="stack">
+                    <div class="meta-item">
+                        <span class="meta-label">Location</span>
+                        <strong>{{ hike.location }}</strong>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">When</span>
+                        <strong>{{ hike.date|date:"M j, Y" }} at {{ hike.time|time:"g:i A" }}</strong>
+                    </div>
+                </div>
+            </article>
 
-    <form method="post">
-        {% csrf_token %}
-
-        {{ form.non_field_errors }}
-        {{ form.errors }}
-
-        <div style="margin-bottom: 16px;">
-            <strong>Capacity</strong><br>
-            {{ form.capacity }}
-        </div>
-
-        <div style="margin-bottom: 16px;">
-            <strong>Departure Location</strong><br>
-            {{ form.departure_location }}
-        </div>
-
-        <div style="margin-bottom: 16px;">
-            <strong>Departure Time</strong><br>
-            {{ form.departure_time }}
-        </div>
-
-        <div style="margin-bottom: 16px;">
-            <strong>Contact Info</strong><br>
-            {{ form.contact_info }}
-        </div>
-
-        <div style="margin-bottom: 20px;">
-            <strong>Notes</strong><br>
-            {{ form.notes }}
-        </div>
-
-        <div style="display: flex; gap: 12px; align-items: center;">
-            <button type="submit">Save Changes</button>
-            <a href="{% url 'detail_hike' hike.id %}">Cancel</a>
-        </div>
-    </form>
-
-    <hr style="margin: 30px 0;">
-
-    <form method="post" action="{% url 'delete_carpool_offer' offer.id %}">
-        {% csrf_token %}
-        <button type="submit" style="color: red;">
-            Remove My Carpool
-        </button>
-    </form>
-
-</div>
-
+            <article class="panel">
+                <span class="eyebrow">Danger zone</span>
+                <h2 class="card-title">Remove this offer</h2>
+                <form method="post" action="{% url 'delete_carpool_offer' offer.id %}">
+                    {% csrf_token %}
+                    <button class="btn btn-danger" type="submit">Remove my carpool</button>
+                </form>
+            </article>
+        </aside>
+    </section>
 {% endblock %}

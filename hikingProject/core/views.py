@@ -19,7 +19,7 @@ def home(request):
             Q(organizer=request.user) |
             Q(join_requests__user=request.user,
               join_requests__status="approved")
-            ).distinct()
+            ).order_by("date", "time").distinct()
 
     return render(request, "home.html", {"events": events})
 
@@ -247,7 +247,8 @@ def detail_hike(request, hike_id):
             event_join_requests__event=hike,
             event_join_requests__status="approved",
             )
-    return render(request, "detail_hike.html", {"can_view_thread": can_view_thread, "accepted_users": accepted_users, "hike": hike, "has_pending_request": has_pending_request, "is_participant": is_participant, "has_been_rejected": has_been_rejected, "qr_code": qr_base64, "is_driver": is_driver})
+    pending_join_requests = hike.join_requests.filter(status="pending").select_related("user")
+    return render(request, "detail_hike.html", {"can_view_thread": can_view_thread, "accepted_users": accepted_users, "hike": hike, "has_pending_request": has_pending_request, "is_participant": is_participant, "has_been_rejected": has_been_rejected, "pending_join_requests": pending_join_requests, "qr_code": qr_base64, "is_driver": is_driver})
 
 @login_required
 def leave_hike(request, hike_id):
@@ -400,6 +401,10 @@ def detail_user(request, user_id):
                 addressee=request.user,
                 status="pending",
                 )
+        outgoing_requests = Friendship.objects.filter(
+                requester=request.user,
+                status="pending",
+                )
         friends = []
         for friendship in accepted_friendships:
             if friendship.requester == request.user:
@@ -408,6 +413,7 @@ def detail_user(request, user_id):
                 friends.append(friendship.requester)
         context["friends"] = friends
         context["incoming_requests"] = incoming_requests
+        context["outgoing_requests"] = outgoing_requests
         context["is_profile"] = True
     return render(request, "detail_user.html", context)
 
@@ -602,7 +608,7 @@ def hike_thread(request, hike_id):
             message=f"You have unread messages in '{hike.title}'.",
             notification_type = "hike_message",
             ).update(is_read=True)
-    messages = hike.messages.select_related("user").order_by("created_at")
+    thread_messages = hike.messages.select_related("user").order_by("created_at")
     if request.method == "POST":
         form = HikeMessageForm(request.POST)
         if form.is_valid():
@@ -643,7 +649,7 @@ def hike_thread(request, hike_id):
 
     return render(request, "hike_thread.html", {
         "hike": hike,
-        "messages": messages,
+        "thread_messages": thread_messages,
         "form": form,
         })
 
