@@ -28,13 +28,13 @@
                         <div class="avatar-placeholder avatar-placeholder--large">{{ user.username|slice:":1"|upper }}</div>
                     {% endif %}
                     <div class="identity-copy">
-                        <h2 class="card-title">{{ user.name|default:user.username }}</h2>
-                        <p>@{{ user.username }}</p>
+                        <h2 class="card-title" style="color: var(--sand-100);">{{ user.name|default:user.username }}</h2>
+                        <p style="color: var(--mist-200);">@{{ user.username }}</p>
                     </div>
                 </div>
                 <div class="tag-row">
-                    <span class="status-pill">{{ user.get_experience_level_display }}</span>
-                    <span class="status-pill status-pill--pending">{{ user.get_pace_display }} pace</span>
+                    <span class="status-pill" style="color: white; background: rgba(255, 255, 255, 0.15);">{{ user.get_experience_level_display }}</span>
+                    <span class="status-pill status-pill--pending" style="color: #e0f2f4; background: rgba(175, 221, 229, 0.25);">{{ user.get_pace_display }} pace</span>
                 </div>
             </article>
 
