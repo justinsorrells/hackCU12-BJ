@@ -12,5 +12,8 @@ urlpatterns = [
     path("hike/<int:hike_id>/", views.detail_hike, name="detail_hike"),
     path("search/", views.search_view, name="search"),
     path("edit_profile/", views.edit_profile, name="edit_profile"),
+    path("account/delete/", views.delete_account, name="delete_account"),
     path("user/<int:user_id>/", views.detail_user, name="detail_user"),
+    path("password/change/", auth_views.PasswordChangeView.as_view(template_name="password_change.html"), name="password_change"),
+    path("password/change/done/", auth_views.PasswordChangeDoneView.as_view(template_name="password_change_done.html"), name="password_change_done"),
 ]
