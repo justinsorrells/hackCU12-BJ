@@ -8,7 +8,57 @@ Profile
 
     <h2>User Profile</h2>
     <h1>{{ profile_user.name }}</h1>
+    {% if not is_profile and not is_friend and not has_sent_request and not has_received_request %}
+	<form method="post" action="{% url 'send_friend_request' profile_user.id %}">
+            {% csrf_token %}
+            <button type="submit">Add Friend</button>
+        </form>
+    {% endif %}
+	{% if is_profile %}
+	    <h2>Incoming Friend Requests</h2>
+	    {% for friendship in incoming_requests %}
+		<div>
+		    <a href="{% url 'detail_user' friendship.requester.id %}">
+			{{ friendship.requester.username }}
+		    </a>
 
+		    <form method="post" action="{% url 'accept_friend_request' friendship.id %}">
+			{% csrf_token %}
+			<button type="submit">Accept</button>
+		    </form>
+
+		    <form method="post" action="{% url 'decline_friend_request' friendship.id %}">
+			{% csrf_token %}
+			<button type="submit">Decline</button>
+		    </form>
+		</div>
+	    {% empty %}
+		<p>No incoming requests.</p>
+	    {% endfor %}
+
+	    <h2>Outgoing Friend Requests</h2>
+	    {% for friendship in outgoing_requests %}
+		<div>
+		    <a href="{% url 'detail_user' friendship.addressee.id %}">
+			{{ friendship.addressee.username }}
+		    </a>
+		    <span>(pending)</span>
+		</div>
+	    {% empty %}
+		<p>No outgoing requests.</p>
+	    {% endfor %}
+
+	    <h2>Friends</h2>
+	    {% for friend in friends %}
+		<div>
+		    <a href="{% url 'detail_user' friend.id %}">
+			{{ friend.username }}
+		    </a>
+		</div>
+	    {% empty %}
+		<p>No friends yet.</p>
+	    {% endfor %}
+	{% endif %}
     {% if profile_user.profile_picture %}
         <img src="{{ profile_user.profile_picture.url }}" alt="Profile Picture" style="max-width: 200px; border-radius: 12px;">
     {% endif %}

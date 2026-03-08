@@ -44,16 +44,16 @@ def search_view(request):
 
         if query:
             hikes = HikingEvent.objects.filter(
-                Q(location__icontains=query) |
-                Q(description__icontains=query) |
-                Q(title__icontains=query)
-            ).distinct()
+                    Q(location__icontains=query) |
+                    Q(description__icontains=query) |
+                    Q(title__icontains=query)
+                    ).distinct()
 
             users = User.objects.filter(
-                Q(username__icontains=query) |
-                Q(name__icontains=query) |
-                Q(location__icontains=query)
-            ).exclude(id=request.user.id).distinct()
+                    Q(username__icontains=query) |
+                    Q(name__icontains=query) |
+                    Q(location__icontains=query)
+                    ).exclude(id=request.user.id).distinct()
 
     return render(request, "search.html", {
         "form": form,
@@ -61,11 +61,7 @@ def search_view(request):
         "tab": tab,
         "hikes": hikes,
         "users": users,
-    })
-
-@login_required
-def profile_view(request):
-    return render(request, "profile.html")
+        })
 
 @login_required
 def create_event(request):
@@ -107,20 +103,20 @@ def detail_hike(request, hike_id):
     has_been_rejected = False
     is_participant = False
     has_pending_request = EventJoinRequest.objects.filter(
-        event=hike,
-        user=request.user,
-        status="pending",
-    ).exists()
+            event=hike,
+            user=request.user,
+            status="pending",
+            ).exists()
     is_participant = EventJoinRequest.objects.filter(
-        event=hike,
-        user=request.user,
-        status="approved",
-    ).exists()
+            event=hike,
+            user=request.user,
+            status="approved",
+            ).exists()
     has_been_rejected = EventJoinRequest.objects.filter(
             event=hike,
             user=request.user,
             status="rejected",
-    ).exists()
+            ).exists()
     return render(request, "detail_hike.html", {"hike": hike, "has_pending_request": has_pending_request, "is_participant": is_participant, "has_been_rejected": has_been_rejected})
 
 @login_required
@@ -146,7 +142,7 @@ def request_to_join_hike(request, hike_id):
             event=hike,
             user=request.user,
             defaults={"status": "pending"}
-    )
+            )
     return redirect("detail_hike", hike_id=hike.id)
 
 @login_required
@@ -173,7 +169,64 @@ def reject_join_request(request, request_id):
 @login_required
 def detail_user(request, user_id):
     user = get_object_or_404(User, id=user_id)
-    return render(request, "detail_user.html", {"profile_user": user})
+    is_friend = False
+    has_sent_request = False
+    has_received_request = False
+    context = {}
+    if request.user != user:
+        is_friend = Friendship.objects.filter(
+                Q(requester=request.user, addressee=user) |
+                Q(requester=user, addressee=request.user),
+                status="accepted",
+                ).exists()
+
+        has_sent_request = Friendship.objects.filter(
+                requester=request.user,
+                addressee=user,
+                status="pending",
+                ).exists()
+
+        has_received_request = Friendship.objects.filter(
+                requester=user,
+                addressee=request.user,
+                status="pending",
+                ).exists()
+
+        context = {
+                "profile_user": user,
+                "is_friend": is_friend,
+                "has_sent_request": has_sent_request,
+                "has_received_request": has_received_request,
+                "is_profile": False,
+                }
+
+    elif request.user == user:
+        accepted_friendships = Friendship.objects.filter(
+                Q(requester=request.user) | Q(addressee=request.user),
+                status="accepted",
+                )
+
+        incoming_requests = Friendship.objects.filter(
+                addressee=request.user,
+                status="pending",
+                )
+        friends = []
+        for friendship in accepted_friendships:
+            if friendship.requester == request.user:
+                friends.append(friendship.addressee)
+            else:
+                friends.append(friendship.requester)
+
+        context = {
+                "profile_user": user,
+                "is_friend": is_friend,
+                "has_sent_request": has_sent_request,
+                "has_received_request": has_received_request,
+                "friends": friends,
+                "incoming_requests": incoming_requests,
+                "is_profile": True,
+                }
+    return render(request, "detail_user.html", context)
 
 @login_required
 def delete_account(request):
@@ -182,5 +235,69 @@ def delete_account(request):
         logout(request)
         user.delete()
         return redirect("register")
-
     return redirect("edit_profile")
+
+@login_required
+def send_friend_request(request, user_id):
+    if request.method != "POST":
+        return redirect("detail_user", user_id=user_id)
+    other_user = get_object_or_404(User, id=user_id)
+    if other_user == request.user:
+        return redirect("detail_user", user_id=user_id)
+    existing_friendship = Friendship.objects.filter(
+            Q(requester=request.user, addressee=other_user) |
+            Q(requester=other_user, addressee=request.user)
+            ).first()
+    if existing_friendship is None:
+        Friendship.objects.create(
+                requester=request.user,
+                addressee=other_user,
+                status="pending",
+                )
+    return redirect("detail_user", user_id=user_id)
+
+@login_required
+def accept_friend_request(request, friendship_id):
+    if request.method != "POST":
+        return redirect("detail_user", user_id=request.user.id)
+
+    friendship = get_object_or_404(
+            Friendship,
+            id=friendship_id,
+            addressee=request.user,
+            status="pending",
+            )
+
+    friendship.status = "accepted"
+    friendship.save()
+    return redirect("detail_user", user_id=request.user.id)
+
+@login_required
+def decline_friend_request(request, friendship_id):
+    if request.method != "POST":
+        return redirect("detail_user", user_id=request.user.id)
+
+    friendship = get_object_or_404(
+            Friendship,
+            id=friendship_id,
+            addressee=request.user,
+            status="pending",
+            )
+    friendship.status = "declined"
+    friendship.save()
+    return redirect("detail_user", user_id=request.user.id)
+
+@login_required
+def remove_friend(request, user_id):
+    if request.method != "POST":
+        return redirect("detail_user", user_id=user_id)
+    other_user = get_object_or_404(User, id=user_id)
+    friendship = Friendship.objects.filter(
+            Q(requester=request.user, addressee=other_user) |
+            Q(requester=other_user, addressee=request.user),
+            status="accepted",
+            ).first()
+
+    if friendship:
+        friendship.delete()
+    return redirect("detail_user", user_id=user_id)

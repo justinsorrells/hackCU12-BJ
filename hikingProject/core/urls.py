@@ -19,4 +19,9 @@ urlpatterns = [
     path("user/<int:user_id>/", views.detail_user, name="detail_user"),
     path("password/change/", auth_views.PasswordChangeView.as_view(template_name="password_change.html"), name="password_change"),
     path("password/change/done/", auth_views.PasswordChangeDoneView.as_view(template_name="password_change_done.html"), name="password_change_done"),
+    path("friends/request/<int:user_id>/", views.send_friend_request, name="send_friend_request"),
+    path("friends/accept/<int:friendship_id>/", views.accept_friend_request, name="accept_friend_request"),
+    path("friends/decline/<int:friendship_id>/", views.decline_friend_request, name="decline_friend_request"),
+    path("friends/remove/<int:user_id>/", views.remove_friend, name="remove_friend"),
+
 ]
