@@ -60,7 +60,7 @@
                 <strong>{{ hike.title }}</strong><br>
                 {{ hike.location }}<br>
                 {{ hike.date }} at {{ hike.time }}<br>
-		<a href="{% url 'detail_hike' hike.id%}">Hike Details</a>
+		        <a href="{% url 'detail_hike' hike.id%}">Hike Details</a>
             </div>
         {% empty %}
             <p>No hikes found.</p>
@@ -70,7 +70,8 @@
             <div class="result">
                 <strong>{{ user.name }}</strong><br>
                 @{{ user.username }}<br>
-                {{ user.location }}
+                {{ user.location }}<br>
+                <a href="{% url 'detail_user' user.id %}">View Profile</a>
             </div>
         {% empty %}
             <p>No users found.</p>

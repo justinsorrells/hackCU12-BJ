@@ -1,6 +1,6 @@
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from .models import *
@@ -129,7 +129,7 @@ def edit_profile(request):
         form = EditProfileForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
-            return redirect("profile")
+            return redirect("detail_user", user_id=request.user.id)
     else:
         form = EditProfileForm(instance=request.user)
 
@@ -169,3 +169,18 @@ def reject_join_request(request, request_id):
     join_request.save()
 
     return redirect("detail_hike", hike_id=join_request.event.id)
+
+@login_required
+def detail_user(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    return render(request, "detail_user.html", {"profile_user": user})
+
+@login_required
+def delete_account(request):
+    if request.method == "POST":
+        user = request.user
+        logout(request)
+        user.delete()
+        return redirect("register")
+
+    return redirect("edit_profile")

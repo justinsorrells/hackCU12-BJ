@@ -41,9 +41,28 @@
 
             <div class="form-actions">
                 <button type="submit">Save Changes</button>
-                <a href="{% url 'profile' %}">Cancel</a>
+                <a href="{% url 'detail_user' user.id %}">Cancel</a>
             </div>
         </form>
+
+        <hr>
+
+        <div class="account-actions">
+            <h2>Account Settings</h2>
+
+            <p>
+                <a href="{% url 'password_change' %}" class="secondary-button">
+                    Change Password
+                </a>
+            </p>
+
+            <form method="POST" action="{% url 'delete_account' %}">
+                {% csrf_token %}
+                <button type="submit" class="danger-button">
+                    Delete Account
+                </button>
+            </form>
+        </div>
     </div>
 </div>
 
