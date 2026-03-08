@@ -78,3 +78,20 @@ class HikingEventForm(forms.ModelForm):
         if max_participants is not None and max_participants <= 0:
             raise forms.ValidationError("Max participants must be greater than 0.")
         return max_participants
+    
+class SearchForm(forms.Form):
+    TAB_CHOICES = [
+        ("hikes", "Hikes"),
+        ("users", "Users"),
+    ]
+
+    q = forms.CharField(
+        required=False,
+        label="",
+        widget=forms.TextInput(attrs={"placeholder": "Search..."})
+    )
+    tab = forms.ChoiceField(
+        choices=TAB_CHOICES,
+        required=False,
+        widget=forms.HiddenInput()
+    )

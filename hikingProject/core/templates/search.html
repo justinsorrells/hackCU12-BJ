@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Search{% endblock %}
+
+{% block content %}
+<style>
+    .search-box {
+        width: 600px;
+        background: white;
+        padding: 24px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .tabs {
+        margin: 20px 0;
+    }
+
+    .tabs a {
+        margin-right: 12px;
+        text-decoration: none;
+        color: #4f46e5;
+        font-weight: bold;
+    }
+
+    .tabs .active {
+        text-decoration: underline;
+    }
+
+    .result {
+        padding: 12px 0;
+        border-top: 1px solid #ddd;
+    }
+</style>
+
+<div class="search-box">
+    <h1>Search</h1>
+
+    <form method="get">
+        {{ form.q }}
+        <input type="hidden" name="tab" value="{{ tab }}">
+        <button type="submit">Search</button>
+    </form>
+
+    <div class="tabs">
+        <a href="{% url 'search' %}?q={{ query }}&tab=hikes"
+           class="{% if tab == 'hikes' %}active{% endif %}">
+            Hikes
+        </a>
+
+        <a href="{% url 'search' %}?q={{ query }}&tab=users"
+           class="{% if tab == 'users' %}active{% endif %}">
+            Users
+        </a>
+    </div>
+
+    {% if tab == "hikes" %}
+        {% for hike in hikes %}
+            <div class="result">
+                <strong>{{ hike.title }}</strong><br>
+                {{ hike.location }}<br>
+                {{ hike.date }} at {{ hike.time }}
+            </div>
+        {% empty %}
+            <p>No hikes found.</p>
+        {% endfor %}
+    {% else %}
+        {% for user in users %}
+            <div class="result">
+                <strong>{{ user.name }}</strong><br>
+                @{{ user.username }}<br>
+                {{ user.location }}
+            </div>
+        {% empty %}
+            <p>No users found.</p>
+        {% endfor %}
+    {% endif %}
+</div>
+{% endblock %}

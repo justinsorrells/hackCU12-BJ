@@ -3,8 +3,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from .models import HikingEvent
-from .forms import RegisterForm, HikingEventForm
+from .models import *
+from .forms import *
 
 # Create your views here.
 @login_required
@@ -29,21 +29,39 @@ def register_view(request):
         form = RegisterForm()
     return render(request, "registration/register.html", {"form": form})
 
-def search_hikes_view(request):
-    query = request.GET.get("q", "")
-    hikes = HikingEvent.objects.filter(
-        Q(location__icontains=query) |
-        Q(description__icontains=query)
-    ).distinct()
-    return render(request, "search_results.html", {"hikes": hikes, "query": query})
+@login_required
+def search_view(request):
+    form = SearchForm(request.GET or None)
 
-def search_friends_view(request):
-    query = request.GET.get("q", "")
-    friends = request.user.friends.filter(
-        Q(username__icontains=query) |
-        Q(location__icontains=query)
-    ).distinct()
-    return render(request, "friend_search_results.html", {"friends": friends, "query": query})
+    query = ""
+    tab = "hikes"
+    hikes = HikingEvent.objects.none()
+    users = User.objects.none()
+
+    if form.is_valid():
+        query = form.cleaned_data.get("q", "")
+        tab = form.cleaned_data.get("tab") or "hikes"
+
+        if query:
+            hikes = HikingEvent.objects.filter(
+                Q(location__icontains=query) |
+                Q(description__icontains=query) |
+                Q(title__icontains=query)
+            ).distinct()
+
+            users = User.objects.filter(
+                Q(username__icontains=query) |
+                Q(name__icontains=query) |
+                Q(location__icontains=query)
+            ).exclude(id=request.user.id).distinct()
+
+    return render(request, "search.html", {
+        "form": form,
+        "query": query,
+        "tab": tab,
+        "hikes": hikes,
+        "users": users,
+    })
 
 @login_required
 def profile_view(request):
