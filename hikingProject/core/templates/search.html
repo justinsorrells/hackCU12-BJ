@@ -3,85 +3,77 @@
 {% block title %}Discover | TrailCircle{% endblock %}
 
 {% block content %}
-    <section class="search-layout">
-        <article class="form-card">
-            <span class="eyebrow">Search</span>
-            <h1 class="form-title">Hikes and people</h1>
+    <article class="form-card">
+        <span class="eyebrow">Search</span>
+        <h1 class="form-title">Hikes and people</h1>
 
-            <form method="get" class="form-layout">
-                {{ form.tab }}
-                <div class="segmented-control">
-                    <a class="segmented-control__item {% if tab == 'hikes' %}is-active{% endif %}" href="{% url 'search' %}?q={{ query|urlencode }}&tab=hikes">Hikes</a>
-                    <a class="segmented-control__item {% if tab == 'users' %}is-active{% endif %}" href="{% url 'search' %}?q={{ query|urlencode }}&tab=users">People</a>
-                </div>
+        <form method="get" class="form-layout">
+            {{ form.tab }}
+            <div class="segmented-control">
+                <a class="segmented-control__item {% if tab == 'hikes' %}is-active{% endif %}" href="{% url 'search' %}?q={{ query|urlencode }}&tab=hikes">Hikes</a>
+                <a class="segmented-control__item {% if tab == 'users' %}is-active{% endif %}" href="{% url 'search' %}?q={{ query|urlencode }}&tab=users">People</a>
+            </div>
 
-                <div class="search-toolbar">
-                    <div class="search-field">{{ form.q }}</div>
-                    <button class="btn btn-primary" type="submit">Search</button>
-                </div>
+            <div class="search-toolbar">
+                <div class="search-field">{{ form.q }}</div>
+                <button class="btn btn-primary" type="submit">Search</button>
+            </div>
 
-                {% if tab == "hikes" %}
-                    <div class="filter-grid">
-                        <div class="form-field">
-                            <label for="{{ form.pace.id_for_label }}">Pace</label>
-                            {{ form.pace }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.experience.id_for_label }}">Experience</label>
-                            {{ form.experience }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.date.id_for_label }}">Date</label>
-                            {{ form.date }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.max_mileage.id_for_label }}">Max mileage</label>
-                            {{ form.max_mileage }}
-                        </div>
+            {% if tab == "hikes" %}
+                <div class="filter-grid">
+                    <div class="form-field">
+                        <label for="{{ form.pace.id_for_label }}">Pace</label>
+                        {{ form.pace }}
                     </div>
-                {% else %}
-                    <div class="filter-grid">
-                        <div class="form-field">
-                            <label for="{{ form.location.id_for_label }}">Location</label>
-                            {{ form.location }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.gender.id_for_label }}">Gender</label>
-                            {{ form.gender }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.min_age.id_for_label }}">Minimum age</label>
-                            {{ form.min_age }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.max_age.id_for_label }}">Maximum age</label>
-                            {{ form.max_age }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.user_experience.id_for_label }}">Experience</label>
-                            {{ form.user_experience }}
-                        </div>
-                        <div class="form-field">
-                            <label for="{{ form.user_pace.id_for_label }}">Pace</label>
-                            {{ form.user_pace }}
-                        </div>
+                    <div class="form-field">
+                        <label for="{{ form.experience.id_for_label }}">Experience</label>
+                        {{ form.experience }}
                     </div>
-                {% endif %}
-            </form>
-        </article>
-
-        <aside class="panel">
-            <span class="eyebrow eyebrow--warm">Mode</span>
-            <h2 class="card-title">{% if tab == "hikes" %}Hike filters{% else %}People filters{% endif %}</h2>
-        </aside>
-    </section>
+                    <div class="form-field">
+                        <label for="{{ form.date.id_for_label }}">Date</label>
+                        {{ form.date }}
+                    </div>
+                    <div class="form-field">
+                        <label for="{{ form.max_mileage.id_for_label }}">Max mileage</label>
+                        {{ form.max_mileage }}
+                    </div>
+                </div>
+            {% else %}
+                <div class="filter-grid">
+                    <div class="form-field">
+                        <label for="{{ form.location.id_for_label }}">Location</label>
+                        {{ form.location }}
+                    </div>
+                    <div class="form-field">
+                        <label for="{{ form.gender.id_for_label }}">Gender</label>
+                        {{ form.gender }}
+                    </div>
+                    <div class="form-field">
+                        <label for="{{ form.min_age.id_for_label }}">Minimum age</label>
+                        {{ form.min_age }}
+                    </div>
+                    <div class="form-field">
+                        <label for="{{ form.max_age.id_for_label }}">Maximum age</label>
+                        {{ form.max_age }}
+                    </div>
+                    <div class="form-field">
+                        <label for="{{ form.user_experience.id_for_label }}">Experience</label>
+                        {{ form.user_experience }}
+                    </div>
+                    <div class="form-field">
+                        <label for="{{ form.user_pace.id_for_label }}">Pace</label>
+                        {{ form.user_pace }}
+                    </div>
+                </div>
+            {% endif %}
+        </form>
+    </article>
 
     <section class="section">
         <div class="section-header">
             <div>
                 <span class="eyebrow">Results</span>
                 <h2 class="section-title">{% if tab == "hikes" %}Hike matches{% else %}People matches{% endif %}</h2>
-                <p class="section-subtitle">{% if query %}"{{ query }}"{% else %}Recent results{% endif %}</p>
             </div>
         </div>
 
