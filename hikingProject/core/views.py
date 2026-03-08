@@ -849,6 +849,13 @@ def remove_carpool_participant(request, offer_id, user_id):
         status="approved",
     )
 
+    Notification.objects.create(
+        recipient=participant,
+        sender=request.user,
+        hike=offer.event,
+        notification_type="participant_removed",
+        message=f"You have been removed from the carpool for '{offer.event.title}'.",
+    )
     carpool_request.delete()
 
     return redirect("view_carpool_offers", hike_id=offer.event.id)
@@ -883,6 +890,22 @@ def delete_carpool_offer(request, offer_id):
         return redirect("view_carpool_offers", hike_id=offer.event.id)
 
     if request.method == "POST":
+        riders = User.objects.filter(
+            carpool_requests__carpool_offer=offer,
+            carpool_requests__status="approved",
+        ).exclude(id=request.user.id)
+
+        notifications = [
+            Notification(
+                recipient=rider,
+                sender=request.user,
+                hike=offer.event,
+                notification_type="participant_removed",
+                message=f"The carpool for '{offer.event.title}' has been cancelled.",
+            )
+            for rider in riders
+        ]
+        Notification.objects.bulk_create(notifications)
         offer.delete()
 
     return redirect("view_carpool_offers", hike_id=offer.event.id)
@@ -913,6 +936,14 @@ def request_carpool(request, offer_id):
             carpool_offer=offer,
             rider=request.user,
             status="pending",
+        )
+
+        Notification.objects.create(
+            recipient=offer.driver,
+            sender=request.user,
+            hike=offer.event,
+            notification_type="carpool_request",
+            message=f"{request.user.username} requested to join your carpool for '{offer.event.title}'.",
         )
 
     return redirect("view_carpool_offers", hike_id=offer.event.id)
