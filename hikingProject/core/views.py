@@ -293,6 +293,7 @@ def detail_user(request, user_id):
 
 @login_required
 def delete_account(request):
+    user = request.user
     if request.method == "POST":
         logout(request)
         user.delete()
