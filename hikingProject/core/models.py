@@ -206,3 +206,85 @@ class Notification(models.Model):
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
+    
+class CarpoolOffer(models.Model):
+    event = models.ForeignKey(
+        HikingEvent,
+        on_delete=models.CASCADE,
+        related_name="carpool_offers"
+    )
+
+    driver = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="driving_offers"
+    )
+
+    contact_info = models.CharField(max_length=255)
+
+    capacity = models.PositiveIntegerField()
+
+    departure_location = models.CharField(max_length=255, blank=True)
+    departure_time = models.TimeField(blank=True, null=True)
+
+    notes = models.TextField(blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["event", "driver"],
+                name="unique_carpool_offer_per_event_driver"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.driver} driving for {self.event}"
+
+    @property
+    def approved_rider_count(self):
+        return self.ride_requests.filter(status="approved").count()
+
+    @property
+    def seats_remaining(self):
+        return self.capacity - self.approved_rider_count
+
+
+class CarpoolRequest(models.Model):
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
+    ]
+
+    carpool_offer = models.ForeignKey(
+        CarpoolOffer,
+        on_delete=models.CASCADE,
+        related_name="ride_requests"
+    )
+
+    rider = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="carpool_requests"
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["carpool_offer", "rider"],
+                name="unique_carpool_request_per_offer_rider"
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.rider} -> {self.carpool_offer} ({self.status})"
