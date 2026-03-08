@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from .models import User, HikingEvent
+import datetime as dt
 
 class RegisterForm(UserCreationForm):
     class Meta:
@@ -78,6 +79,13 @@ class HikingEventForm(forms.ModelForm):
         if max_participants is not None and max_participants <= 0:
             raise forms.ValidationError("Max participants must be greater than 0.")
         return max_participants
+
+    def clean_date(self):
+        date = self.cleaned_data.get("date") 
+        today = dt.date.today()
+        if date.year < today.year or date.month < today.month or (date.month == today.month and date.day < today.day):
+            raise forms.ValidationError("Must choose future date")
+        return date
     
 class SearchForm(forms.Form):
     TAB_CHOICES = [
