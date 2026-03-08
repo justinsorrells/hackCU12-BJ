@@ -2,20 +2,29 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from .forms import SignUpForm
+from django.db.models import Q
+from .models import HikingEvent
+from .forms import RegisterForm
 
 # Create your views here.
 @login_required
 def home(request):
-    return HttpResponse("Hello, Ben!")
 
-def signup_view(request):
+    events = HikingEvent.objects.filter(
+        Q(organizer=request.user) |
+        Q(join_requests__user=request.user,
+          join_requests__status="approved")
+    ).distinct()
+
+    return render(request, "home.html", {"events": events})
+
+def register_view(request):
     if request.method == "POST":
-        form = SignUpForm(request.POST)
+        form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
             return redirect("home")
     else:
-        form = SignUpForm()
-    return render(request, "registration/signup.html", {"form": form})
+        form = RegisterForm()
+    return render(request, "registration/register.html", {"form": form})

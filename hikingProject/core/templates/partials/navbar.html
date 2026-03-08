@@ -1,0 +1,29 @@
+<nav style="display:flex; justify-content:space-between; background:#2c3e50; padding:12px 20px;">
+
+    <div>
+        <a href="{% url 'home' %}" style="color:white; margin-right:20px;">Home</a>
+        <a href="" style="color:white; margin-right:20px;">Search</a>
+
+        {% if user.is_authenticated %}
+            <a href="" style="color:white;">Create</a>
+        {% endif %}
+    </div>
+
+    <div>
+        {% if user.is_authenticated %}
+            <a href="" style="color:white; margin-right:15px;">
+                {{ user.username }}
+            </a>
+
+            <form method="post" action="{% url 'logout' %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit">Logout</button>
+            </form>
+
+        {% else %}
+            <a href="{% url 'login' %}" style="color:white; margin-right:15px;">Login</a>
+            <a href="{% url 'register' %}" style="color:white;">Register</a>
+        {% endif %}
+    </div>
+
+</nav>

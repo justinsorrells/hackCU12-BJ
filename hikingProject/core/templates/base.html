@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}Hiking App{% endblock %}</title>
+</head>
+
+<body>
+
+{% include "partials/navbar.html" %}
+
+<main style="padding:30px;">
+    {% block content %}{% endblock %}
+</main>
+
+</body>
+</html>

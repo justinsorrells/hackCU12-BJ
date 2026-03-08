@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}
+Home
+{% endblock %}
+
+{% block content %}
+
+<h2>Upcoming Hikes</h2>
+
+{% if events %}
+    <ul>
+        {% for event in events %}
+            <li>
+                <strong>{{ event.title }}</strong><br>
+                Location: {{ event.location }}<br>
+                Date: {{ event.date }} {{ event.time }}<br>
+                Pace: {{ event.pace }}<br>
+                Distance: {{ event.mileage }} miles<br>
+                Elevation gain: {{ event.elevation_gain }} ft
+            </li>
+            <br>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No hikes available yet.</p>
+{% endif %}
+
+{% endblock %}
