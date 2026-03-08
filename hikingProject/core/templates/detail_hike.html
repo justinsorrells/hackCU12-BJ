@@ -52,8 +52,10 @@ Home
 		<p><strong>Max Participants:</strong> {{ hike.max_participants }}</p>
 	{% endif %}
 
-	<p><strong>Share With QR Code:</strong></p>
-	<img src="data:image/png;base64,{{ qr_code }}" alt="QR Code">
+	{% if qr_code %}
+		<p><strong>Share With QR Code:</strong></p>
+		<img src="data:image/png;base64,{{ qr_code }}" alt="QR Code">
+	{% endif %}
 
 	{% if is_participant %}
 		<p>You are a participant in this hike.</p>
@@ -69,5 +71,76 @@ Home
 			{% csrf_token %}
 			<button type="submit">Delete hike</button>
 		</form>
+	{% endif %}
+
+	{% if hike.gpx_file %}
+		<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+		<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+		<div id="map" style="height: 500px; width: 100%;"></div>
+
+		<script>
+			const map = L.map("map").setView([39.7392, -104.9903], 10);
+
+			L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+				maxZoom: 19
+			}).addTo(map);
+
+			fetch("{{ hike.gpx_file.url }}")
+				.then(response => response.text())
+				.then(gpxText => {
+					const parser = new DOMParser();
+					const xml = parser.parseFromString(gpxText, "application/xml");
+
+					console.log(gpxText);
+					console.log(xml);
+
+					const trkpts = Array.from(xml.getElementsByTagNameNS("*", "trkpt"));
+					const rtepts = Array.from(xml.getElementsByTagNameNS("*", "rtept"));
+					const wpts = Array.from(xml.getElementsByTagNameNS("*", "wpt"));
+
+					let routePoints = [];
+
+					if (trkpts.length > 0) {
+						routePoints = trkpts.map(pt => [
+							parseFloat(pt.getAttribute("lat")),
+							parseFloat(pt.getAttribute("lon"))
+						]);
+					} else if (rtepts.length > 0) {
+						routePoints = rtepts.map(pt => [
+							parseFloat(pt.getAttribute("lat")),
+							parseFloat(pt.getAttribute("lon"))
+						]);
+					}
+
+					console.log("trkpts:", trkpts.length);
+					console.log("rtepts:", rtepts.length);
+					console.log("wpts:", wpts.length);
+					console.log("routePoints:", routePoints);
+
+					if (routePoints.length > 0) {
+						const polyline = L.polyline(routePoints, {
+							color: "blue",
+							weight: 4,
+							opacity: 0.9
+						}).addTo(map);
+
+						if (wpts.length > 0) {
+							const startLat = parseFloat(wpts[0].getAttribute("lat"));
+							const startLon = parseFloat(wpts[0].getAttribute("lon"));
+							L.marker([startLat, startLon]).addTo(map).bindPopup("Start");
+						} else {
+							L.marker(routePoints[0]).addTo(map).bindPopup("Start");
+						}
+
+						map.fitBounds(polyline.getBounds());
+					} else {
+						console.log("No track or route points found in GPX.");
+					}
+				})
+				.catch(error => {
+					console.error("Error loading GPX:", error);
+				});
+		</script>
 	{% endif %}
 {% endblock %}
