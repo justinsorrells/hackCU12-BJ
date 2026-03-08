@@ -72,9 +72,8 @@ Home
 			</form>
 		{% endif %}<br>
 	{% endfor %}
-	{% if is_participant %}
-		<p>You are a participant in this hike.</p>
-	{% elif has_been_rejected %}
+
+	{% if has_been_rejected %}
 		<p>Your request to join this hike was rejected.</p>
 	{% elif has_pending_request %}
 		<p>Your request to join this hike is pending approval.</p>
@@ -86,6 +85,10 @@ Home
 			{% csrf_token %}
 			<button type="submit">Delete hike</button>
 		</form>
+	{% endif %}
+
+	{% if is_participant or request.user == hike.organizer %}
+		<a href="{% url 'view_carpool_offers' hike.id %}">View Carpools</a>
 	{% endif %}
 
 	{% if hike.gpx_file %}

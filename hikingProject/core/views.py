@@ -207,6 +207,8 @@ def detail_hike(request, hike_id):
     qr.save(buffer, format="PNG")
     qr_base64 = base64.b64encode(buffer.getvalue()).decode()
 
+    is_driver = CarpoolOffer.objects.filter(event=hike, driver=request.user).exists()
+
     has_pending_request = False
     has_been_rejected = False
     is_participant = False
@@ -229,7 +231,71 @@ def detail_hike(request, hike_id):
         event_join_requests__event=hike,
         event_join_requests__status="approved",
     )
-    return render(request, "detail_hike.html", {"accepted_users": accepted_users, "hike": hike, "has_pending_request": has_pending_request, "is_participant": is_participant, "has_been_rejected": has_been_rejected, "qr_code": qr_base64})
+    return render(request, "detail_hike.html", {"accepted_users": accepted_users, "hike": hike, "has_pending_request": has_pending_request, "is_participant": is_participant, "has_been_rejected": has_been_rejected, "qr_code": qr_base64, "is_driver": is_driver})
+
+@login_required
+def view_carpool_offers(request, hike_id):
+    hike = get_object_or_404(HikingEvent, id=hike_id)
+
+    user_offer = CarpoolOffer.objects.filter(
+        event=hike,
+        driver=request.user
+    ).first()
+
+    carpool_offers = CarpoolOffer.objects.filter(
+        event=hike
+    ).select_related("driver").prefetch_related("ride_requests__rider")
+
+    for offer in carpool_offers:
+        offer.user_request = offer.ride_requests.filter(rider=request.user).first()
+
+    return render(request, "carpool_offers.html", {
+        "hike": hike,
+        "carpool_offers": carpool_offers,
+        "user_offer": user_offer,
+    })
+
+@login_required
+def delete_carpool_offer(request, offer_id):
+    offer = get_object_or_404(CarpoolOffer, id=offer_id)
+
+    if offer.driver != request.user:
+        return redirect("view_carpool_offers", hike_id=offer.event.id)
+
+    if request.method == "POST":
+        offer.delete()
+
+    return redirect("view_carpool_offers", hike_id=offer.event.id)
+
+@login_required
+def request_carpool(request, offer_id):
+    offer = get_object_or_404(CarpoolOffer, id=offer_id)
+
+    if offer.driver == request.user:
+        return redirect("view_carpool_offers", hike_id=offer.event.id)
+
+    is_participant = EventJoinRequest.objects.filter(
+        event=offer.event,
+        user=request.user,
+        status="approved",
+    ).exists()
+
+    if not is_participant:
+        return redirect("view_carpool_offers", hike_id=offer.event.id)
+
+    existing_request = CarpoolRequest.objects.filter(
+        carpool_offer=offer,
+        rider=request.user,
+    ).first()
+
+    if existing_request is None:
+        CarpoolRequest.objects.create(
+            carpool_offer=offer,
+            rider=request.user,
+            status="pending",
+        )
+
+    return redirect("view_carpool_offers", hike_id=offer.event.id)
 
 @login_required
 def leave_hike(request, hike_id):
@@ -577,3 +643,133 @@ def remove_participant(request, hike_id, user_id):
     join_request.delete()
 
     return redirect("detail_hike", hike_id=hike_id)
+
+@login_required
+def offer_carpool(request, hike_id):
+    hike = get_object_or_404(HikingEvent, id=hike_id)
+
+    is_participant_or_organizer = EventJoinRequest.objects.filter(
+        event=hike,
+        user=request.user,
+        status="approved",
+    ).exists() or hike.organizer == request.user
+
+    is_already_offering = CarpoolOffer.objects.filter(
+        event=hike,
+        driver=request.user,
+    ).exists()
+
+    if not is_participant_or_organizer or is_already_offering:
+        return redirect("detail_hike", hike_id=hike_id)
+
+    if request.method == "POST":
+        form = CarpoolOfferForm(request.POST)
+        if form.is_valid():
+            carpool_offer = form.save(commit=False)
+            carpool_offer.event = hike
+            carpool_offer.driver = request.user
+            carpool_offer.save()
+            return redirect("view_carpool_offers", hike_id=hike_id)
+    else:
+        form = CarpoolOfferForm()
+
+    return render(request, "offer_carpool.html", {
+        "form": form,
+        "hike": hike,
+    })
+
+@login_required
+def approve_carpool_request(request, request_id):
+    carpool_request = get_object_or_404(CarpoolRequest, id=request_id)
+    if carpool_request.carpool_offer.driver != request.user:
+        return redirect("view_carpool_offers", hike_id=carpool_request.carpool_offer.event.id)
+
+    if carpool_request.carpool_offer.seats_remaining <= 0:
+        return redirect("view_carpool_offers", hike_id=carpool_request.carpool_offer.event.id)
+
+    carpool_request.status = "approved"
+    carpool_request.save()
+    return redirect("view_carpool_offers", hike_id=carpool_request.carpool_offer.event.id)
+
+@login_required
+def reject_carpool_request(request, request_id):
+    carpool_request = get_object_or_404(CarpoolRequest, id=request_id)
+    if carpool_request.carpool_offer.driver != request.user:
+        return redirect("view_carpool_offers", hike_id=carpool_request.carpool_offer.event.id)
+
+    carpool_request.status = "rejected"
+    carpool_request.save()
+    return redirect("view_carpool_offers", hike_id=carpool_request.carpool_offer.event.id)
+
+@login_required
+def edit_carpool_offer(request, offer_id):
+    offer = get_object_or_404(CarpoolOffer, id=offer_id)
+    hike = offer.event
+
+    if request.user != offer.driver:
+        return redirect("view_carpool_offers", hike_id=hike.id)
+
+    if request.method == "POST":
+        form = CarpoolOfferForm(request.POST, instance=offer)
+        if form.is_valid():
+            form.save()
+            return redirect("view_carpool_offers", hike_id=hike.id)
+    else:
+        form = CarpoolOfferForm(instance=offer)
+
+    return render(request, "edit_carpool.html", {
+        "form": form,
+        "hike": hike,
+        "offer": offer,
+    })
+
+@login_required
+def leave_carpool(request, offer_id):
+    offer = get_object_or_404(CarpoolOffer, id=offer_id)
+
+    if request.user == offer.driver:
+        return redirect("view_carpool_offers", hike_id=offer.event.id)
+
+    carpool_request = CarpoolRequest.objects.filter(
+        carpool_offer=offer,
+        rider=request.user,
+        status="approved",
+    ).first()
+
+    if carpool_request:
+        carpool_request.delete()
+
+    return redirect("view_carpool_offers", hike_id=offer.event.id)
+
+@login_required
+def cancel_carpool_request(request, request_id):
+    carpool_request = get_object_or_404(CarpoolRequest, id=request_id)
+
+    if request.user != carpool_request.rider:
+        return redirect("view_carpool_offers", hike_id=carpool_request.carpool_offer.event.id)
+
+    if carpool_request.status == "approved":
+        return redirect("view_carpool_offers", hike_id=carpool_request.carpool_offer.event.id)
+
+    carpool_request.delete()
+    return redirect("view_carpool_offers", hike_id=carpool_request.carpool_offer.event.id)
+
+@login_required
+def remove_carpool_participant(request, offer_id, user_id):
+    offer = get_object_or_404(CarpoolOffer, id=offer_id)
+
+    if request.user != offer.driver:
+        return redirect("view_carpool_offers", hike_id=offer.event.id)
+
+    participant = get_object_or_404(User, id=user_id)
+
+    carpool_request = get_object_or_404(
+        CarpoolRequest,
+        carpool_offer=offer,
+        rider=participant,
+        status="approved",
+    )
+
+    carpool_request.delete()
+
+    return redirect("view_carpool_offers", hike_id=offer.event.id)

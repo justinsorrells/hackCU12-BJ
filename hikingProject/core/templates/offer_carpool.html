@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Offer Carpool{% endblock %}
+
+{% block content %}
+
+<div style="max-width: 600px; margin: 0 auto;">
+    <h1>Offer a Carpool</h1>
+
+    <p style="margin-bottom: 24px;">
+        <strong>{{ hike.title }}</strong><br>
+        {{ hike.location }}<br>
+        {{ hike.date }} at {{ hike.time }}
+    </p>
+
+    <form method="post">
+        {% csrf_token %}
+
+        {{ form.non_field_errors }}
+        {{ form.errors }}
+
+        <div style="margin-bottom: 16px;">
+            <strong>Capacity</strong><br>
+            {{ form.capacity }}
+        </div>
+
+        <div style="margin-bottom: 16px;">
+            <strong>Departure Location</strong><br>
+            {{ form.departure_location }}
+        </div>
+
+        <div style="margin-bottom: 16px;">
+            <strong>Departure Time</strong><br>
+            {{ form.departure_time }}
+        </div>
+
+        <div style="margin-bottom: 16px;">
+            <strong>Contact Info</strong><br>
+            {{ form.contact_info }}
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <strong>Notes</strong><br>
+            {{ form.notes }}
+        </div>
+
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <button type="submit">Offer Carpool</button>
+            <a href="{% url 'detail_hike' hike.id %}">Cancel</a>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

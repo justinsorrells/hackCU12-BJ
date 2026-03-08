@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import User, HikingEvent
+from .models import CarpoolOffer, User, HikingEvent
 import datetime as dt
 
 class RegisterForm(UserCreationForm):
@@ -184,6 +184,17 @@ class EditProfileForm(forms.ModelForm):
             "profile_picture",
             "pace",
         )
+
+class CarpoolOfferForm(forms.ModelForm):
+    class Meta:
+        model = CarpoolOffer
+        fields = ["contact_info", "capacity", "departure_location", "departure_time", "notes"]
+        widgets = {
+            "departure_time": forms.TimeInput(attrs={
+                    "type": "time"
+                    }),
+            "notes": forms.Textarea(attrs={"rows": 4, "placeholder": "Add any details about the carpool offer"}),
+        }
 
 class ReportUserForm(forms.Form):
     reason = forms.ChoiceField(choices=[
