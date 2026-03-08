@@ -589,7 +589,7 @@ def remove_participant(request, hike_id, user_id):
 def hike_thread(request, hike_id):
     hike = get_object_or_404(HikingEvent, id=hike_id)
     is_participant = EventJoinRequest.objects.filter(
-            hike=hike,
+            event=hike,
             user=request.user,
             status="approved"
             ).exists()
@@ -923,7 +923,7 @@ def request_carpool(request, offer_id):
         status="approved",
     ).exists()
 
-    if not is_participant:
+    if not is_participant and offer.event.organizer != request.user:
         return redirect("view_carpool_offers", hike_id=offer.event.id)
 
     existing_request = CarpoolRequest.objects.filter(
