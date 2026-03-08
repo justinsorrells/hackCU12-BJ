@@ -77,16 +77,6 @@ python manage.py runserver 0.0.0.0:8000
 
 Then open [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
-## Makefile Shortcuts
-
-From `hikingProject/`:
-
-- `make clean` - removes `core/migrations` and `db.sqlite3`
-- `make migrate` - runs migrations
-- `make seed` - seeds sample users and hikes
-- `make run` - starts the dev server
-- `make all` - clean + migrate + seed + run
-
 ## Seed Data Notes
 
 The seed command creates:
