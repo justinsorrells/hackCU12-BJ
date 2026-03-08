@@ -103,7 +103,27 @@ def edit_hike(request, hike_id):
 @login_required
 def detail_hike(request, hike_id):
     hike = get_object_or_404(HikingEvent, id=hike_id)
-    return render(request, "detail_hike.html", {"hike": hike})
+    has_pending_request = False
+    has_been_rejected = False
+    is_participant = False
+    has_pending_request = EventJoinRequest.objects.filter(
+        event=hike,
+        user=request.user,
+        status="pending",
+    ).exists()
+    is_participant = EventJoinRequest.objects.filter(
+        event=hike,
+        user=request.user,
+        status="approved",
+    ).exists()
+    has_been_rejected = EventJoinRequest.objects.filter(
+            event=hike,
+            user=request.user,
+            status="rejected",
+    ).exists()
+    return render(request, "detail_hike.html", {"hike": hike, "has_pending_request": has_pending_request, "is_participant": is_participant, "has_been_rejected": has_been_rejected})
+
+@login_required
 def edit_profile(request):
     if request.method == "POST":
         form = EditProfileForm(request.POST, request.FILES, instance=request.user)
@@ -116,3 +136,36 @@ def edit_profile(request):
     return render(request, "edit_profile.html", {
         "form": form,
         })
+
+@login_required
+def request_to_join_hike(request, hike_id):
+    hike = get_object_or_404(HikingEvent, id=hike_id)
+    if hike.organizer == request.user:
+        return redirect("detail_hike", hike_id=hike.id)
+    join_request, created = EventJoinRequest.objects.get_or_create(
+            event=hike,
+            user=request.user,
+            defaults={"status": "pending"}
+    )
+    return redirect("detail_hike", hike_id=hike.id)
+
+@login_required
+def approve_join_request(request, request_id):
+    join_request = get_object_or_404(EventJoinRequest, id=request_id)
+    if join_request.event.organizer != request.user:
+        return redirect("detail_hike", join_request.event.id)
+    join_request.status = "approved"
+    join_request.save()
+    return redirect("detail_hike", hike_id=join_request.event.id)
+
+@login_required
+def reject_join_request(request, request_id):
+    join_request = get_object_or_404(EventJoinRequest, id=request_id)
+
+    if join_request.event.organizer != request.user:
+        return redirect("detail_hike", hike_id=join_request.event.id)
+
+    join_request.status = "rejected"
+    join_request.save()
+
+    return redirect("detail_hike", hike_id=join_request.event.id)

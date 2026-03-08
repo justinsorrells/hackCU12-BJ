@@ -11,6 +11,9 @@ urlpatterns = [
     path("create_event/", views.create_event, name="create_event"), 
     path("hike/<int:hike_id>/edit/", views.edit_hike, name="edit_hike"), 
     path("hike/<int:hike_id>/", views.detail_hike, name="detail_hike"),
+    path("hike/<int:hike_id>/request-join/", views.request_to_join_hike, name="request_to_join_hike"),
+    path("join-requests/<int:request_id>/approve/", views.approve_join_request, name="approve_join_request"),
+    path("join-requests/<int:request_id>/reject/", views.reject_join_request, name="reject_join_request"),
     path("search/", views.search_view, name="search"),
     path("edit_profile/", views.edit_profile, name="edit_profile"),
 ]

@@ -8,7 +8,32 @@ Home
 
 	<h2>Upcoming Hikes</h2>
 	<h1>{{ hike.title }}</h1>
+	{% if user != hike.organizer and not has_pending_request and not is_participant and not has_been_rejected %}
+	    <form method="post" action="{% url 'request_to_join_hike' hike.id %}">
+		{% csrf_token %}
+		<button type="submit">Request to Join</button>
+	    </form>
+	{% endif %}
+	{% if request.user == hike.organizer %}
+	    <h2>Pending Join Requests</h2>
+	    {% for join_request in hike.join_requests.all %}
+		{% if join_request.status == "pending" %}
+		    <p>
+			{{ join_request.user.username }}
 
+			<form method="post" action="{% url 'approve_join_request' join_request.id %}">
+			    {% csrf_token %}
+			    <button type="submit">Approve</button>
+			</form>
+
+			<form method="post" action="{% url 'reject_join_request' join_request.id %}">
+			    {% csrf_token %}
+			    <button type="submit">Reject</button>
+			</form>
+		    </p>
+		{% endif %}
+	    {% endfor %}
+	{% endif %}
 	<p><strong>Organizer:</strong> {{ hike.organizer.username }}</p>
 	<p><strong>Location:</strong> {{ hike.location }}</p>
 	<p><strong>Date:</strong> {{ hike.date }}</p>
