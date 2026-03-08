@@ -93,7 +93,7 @@ def search_view(request):
                 hikes = hikes.filter(pace=pace)
 
             if experience:
-                hikes = hikes.filter(recommended_experience_level=experience)
+                hikes = hikes.filter(recommended_experience=experience)
 
             if date:
                 hikes = hikes.filter(date=date)
