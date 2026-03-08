@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<div class="profile-container">
+<div class="profile-page">
 
     <div class="profile-card">
 
@@ -19,30 +19,31 @@
             <div class="profile-info">
                 <h1>{{ user.name }}</h1>
                 <p class="username">@{{ user.username }}</p>
+
+                <div class="location">
+                    {{ user.location }}
+                </div>
             </div>
 
         </div>
 
-        <div class="profile-details">
-            <div class="detail">
-                <span class="label">Location: </span>
-                <span>{{ user.location }}</span>
+        <div class="profile-stats">
+
+            <div class="stat">
+                <span class="stat-label">Experience: </span>
+                <span class="badge experience">{{ user.get_experience_level_display }}</span>
             </div>
 
-            <div class="detail">
-                <span class="label">Experience: </span>
-                <span>{{ user.get_experience_level_display }}</span>
+            <div class="stat">
+                <span class="stat-label">Pace: </span>
+                <span class="badge pace">{{ user.get_pace_display }}</span>
             </div>
 
-            <div class="detail">
-                <span class="label">Pace: </span>
-                <span>{{ user.get_pace_display }}</span>
+            <div class="stat">
+                <span class="stat-label">Gender: </span>
+                <span class="badge gender">{{ user.get_gender_display }}</span>
             </div>
 
-            <div class="detail">
-                <span class="label">Gender: </span>
-                <span>{{ user.get_gender_display }}</span>
-            </div>
         </div>
 
     </div>
