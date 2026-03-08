@@ -93,7 +93,7 @@
                                 <button type="submit">Leave Carpool</button>
                             </form>
                         {% endif %}
-                    {% else %}
+                    {% elif not user_offer %}
                         <form method="post" action="{% url 'request_carpool' offer.id %}" style="display: inline;">
                             {% csrf_token %}
                             <button type="submit">Join This Carpool</button>

@@ -353,8 +353,7 @@ def reject_join_request(request, request_id):
     if join_request.event.organizer != request.user:
         return redirect("detail_hike", hike_id=join_request.event.id)
 
-    join_request.status = "rejected"
-    join_request.save()
+    join_request.delete()
 
     return redirect("detail_hike", hike_id=join_request.event.id)
 
@@ -697,8 +696,7 @@ def reject_carpool_request(request, request_id):
     if carpool_request.carpool_offer.driver != request.user:
         return redirect("view_carpool_offers", hike_id=carpool_request.carpool_offer.event.id)
 
-    carpool_request.status = "rejected"
-    carpool_request.save()
+    carpool_request.delete()
     return redirect("view_carpool_offers", hike_id=carpool_request.carpool_offer.event.id)
 
 @login_required
