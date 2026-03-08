@@ -7,7 +7,7 @@
         <article class="card thread-card">
             <span class="eyebrow">Hike thread</span>
             <h1 class="section-title">{{ hike.title }} discussion</h1>
-            <p class="section-subtitle">Messages stay scoped to approved participants and the organizer, keeping coordination focused and easy to follow.</p>
+            <p class="section-subtitle">Private trip chat.</p>
 
             {% if thread_messages %}
                 <div class="thread-stream">
@@ -27,14 +27,13 @@
                 <div class="empty-state">
                     <span class="eyebrow eyebrow--warm">Start the thread</span>
                     <h3 class="card-title">No messages yet.</h3>
-                    <p>Use the composer below to post the first update for the group.</p>
                 </div>
             {% endif %}
         </article>
 
         <aside class="stack">
             <article class="panel">
-                <span class="eyebrow eyebrow--warm">Trip summary</span>
+                <span class="eyebrow eyebrow--warm">Trip</span>
                 <h2 class="card-title">{{ hike.title }}</h2>
                 <div class="meta-grid">
                     <div class="meta-item">
@@ -53,7 +52,7 @@
             </article>
 
             <article class="form-card">
-                <span class="eyebrow">Post update</span>
+                <span class="eyebrow">Message</span>
                 <h2 class="card-title">Send a message</h2>
                 <form method="post" class="thread-composer">
                     {% csrf_token %}

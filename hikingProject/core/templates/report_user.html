@@ -7,7 +7,6 @@
         <article class="form-card">
             <span class="eyebrow eyebrow--warm">Report profile</span>
             <h1 class="form-title">Report @{{ reported_user.username }}</h1>
-            <p class="supporting-copy">Use this form to flag harassment, fake accounts, or other behavior that should be reviewed by moderators.</p>
 
             <form method="post" class="form-layout">
                 {% csrf_token %}
@@ -20,9 +19,8 @@
         </article>
 
         <aside class="panel">
-            <span class="eyebrow">Why this matters</span>
-            <h2 class="card-title">Clean social spaces build trust.</h2>
-            <p class="card-copy">Reports help keep hike coordination, messaging, and community discovery safe for everyone using the app.</p>
+            <span class="eyebrow">Moderation</span>
+            <h2 class="card-title">Reports go to moderators.</h2>
         </aside>
     </section>
 {% endblock %}

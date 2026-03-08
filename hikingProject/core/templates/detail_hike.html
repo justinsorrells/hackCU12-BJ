@@ -13,7 +13,9 @@
         <article class="hero-card hero-card--dark">
             <span class="eyebrow">Hike details</span>
             <h1 class="hero-title">{{ hike.title }}</h1>
-            <p>{{ hike.description|default:"A polished hike page should make the plan, permissions, and next actions obvious at a glance." }}</p>
+            {% if hike.description %}
+                <p>{{ hike.description }}</p>
+            {% endif %}
 
             <div class="tag-row">
                 <span class="status-pill">{{ hike.get_pace_display }}</span>
@@ -161,7 +163,6 @@
                 {% else %}
                     <div class="empty-state">
                         <h3 class="card-title">No approved participants yet.</h3>
-                        <p>Once requests are approved, hikers will appear here and gain access to discussion and carpools.</p>
                     </div>
                 {% endif %}
             </div>
@@ -194,7 +195,6 @@
                     {% else %}
                         <div class="empty-state">
                             <h3 class="card-title">No pending requests.</h3>
-                            <p>New join requests will show up here for quick moderation.</p>
                         </div>
                     {% endif %}
                 </div>
@@ -213,9 +213,9 @@
 
         <aside class="stack">
             <article class="panel">
-                <span class="eyebrow eyebrow--warm">Description</span>
+                <span class="eyebrow eyebrow--warm">Details</span>
                 <div class="detail-copy">
-                    <h3>What hikers should know</h3>
+                    <h3>Description</h3>
                     <p>{{ hike.description|default:"No extra description has been added yet." }}</p>
                 </div>
             </article>
@@ -224,7 +224,6 @@
                 <article class="panel">
                     <span class="eyebrow">Transportation</span>
                     <h2 class="card-title">Carpool board</h2>
-                    <p class="card-copy">Keep ride planning integrated with the rest of the hike experience instead of sending people off-platform.</p>
                     <a class="btn btn-primary" href="{% url 'view_carpool_offers' hike.id %}">
                         {% if is_driver %}Manage my carpool{% else %}Open carpool offers{% endif %}
                     </a>

@@ -3,62 +3,67 @@
 {% block title %}{{ profile_user.username }} | TrailCircle{% endblock %}
 
 {% block content %}
-    <section class="profile-hero">
-        <article class="hero-card hero-card--dark">
-            <span class="eyebrow">Profile</span>
-            <div class="identity-row">
+    <section class="profile-shell">
+        <article class="profile-focus-card">
+            <div class="profile-header">
                 {% if profile_user.profile_picture %}
-                    <img class="avatar avatar--large" src="{{ profile_user.profile_picture.url }}" alt="{{ profile_user.username }} profile picture">
+                    <img class="profile-avatar" src="{{ profile_user.profile_picture.url }}" alt="{{ profile_user.username }} profile picture">
                 {% else %}
-                    <div class="avatar-placeholder avatar-placeholder--large">{{ profile_user.username|slice:":1"|upper }}</div>
+                    <div class="profile-avatar-placeholder">{{ profile_user.username|slice:":1"|upper }}</div>
                 {% endif %}
-                <div class="identity-copy">
-                    <h1 class="hero-title">{{ profile_user.name|default:profile_user.username }}</h1>
-                    <p>@{{ profile_user.username }}</p>
+
+                <div class="profile-heading">
+                    <h1 class="profile-name">{{ profile_user.name|default:profile_user.username }}</h1>
+                    <p class="profile-handle">@{{ profile_user.username }}</p>
                 </div>
             </div>
 
-            <div class="tag-row">
-                <span class="status-pill">{{ profile_user.get_experience_level_display }}</span>
-                <span class="status-pill status-pill--pending">{{ profile_user.get_pace_display }} pace</span>
-                <span class="status-pill status-pill--soft">{{ profile_user.location|default:"Location not listed" }}</span>
-            </div>
-
-            <div class="stats-row">
-                <div class="stat-box">
-                    <strong>{{ profile_user.organized_hikes.count }}</strong>
-                    <span>Hosted hikes</span>
-                </div>
-                <div class="stat-box">
-                    <strong>{{ profile_user.age|default:"--" }}</strong>
+            <div class="profile-facts">
+                <div class="profile-fact">
                     <span>Age</span>
+                    <strong>{{ profile_user.age|default:"Not listed" }}</strong>
                 </div>
-                <div class="stat-box">
-                    <strong>{{ profile_user.get_gender_display }}</strong>
-                    <span>Gender</span>
+                <div class="profile-fact">
+                    <span>Location</span>
+                    <strong>{{ profile_user.location|default:"Not listed" }}</strong>
                 </div>
-                <div class="stat-box">
+                <div class="profile-fact">
+                    <span>Experience</span>
+                    <strong>{{ profile_user.get_experience_level_display }}</strong>
+                </div>
+                <div class="profile-fact">
+                    <span>Pace</span>
+                    <strong>{{ profile_user.get_pace_display }}</strong>
+                </div>
+            </div>
+
+            <div class="profile-summary">
+                <div class="profile-summary-item">
+                    <span>Hosted</span>
+                    <strong>{{ profile_user.organized_hikes.count }}</strong>
+                </div>
+                <div class="profile-summary-item">
+                    <span>{% if is_profile %}Friends{% else %}Mutuals{% endif %}</span>
                     <strong>{% if is_profile %}{{ friends|length }}{% else %}{{ mutual_friends|length }}{% endif %}</strong>
-                    <span>{% if is_profile %}Friends{% else %}Mutual friends{% endif %}</span>
                 </div>
+                {% if is_profile %}
+                    <div class="profile-summary-item">
+                        <span>Incoming</span>
+                        <strong>{{ incoming_requests|length }}</strong>
+                    </div>
+                {% endif %}
             </div>
         </article>
 
         <aside class="panel">
-            <span class="eyebrow eyebrow--warm">{% if is_profile %}Your actions{% else %}Connection state{% endif %}</span>
-            <h2 class="card-title">{% if is_profile %}Manage your account{% else %}Decide how you want to connect{% endif %}</h2>
-            <p class="card-copy">
-                {% if is_profile %}
-                    Update profile details, adjust account settings, and keep your public presence ready for new hiking connections.
-                {% else %}
-                    Review the current friendship state and jump to the right action without hunting through the page.
-                {% endif %}
-            </p>
+            <span class="eyebrow eyebrow--warm">{% if is_profile %}Actions{% else %}Connection{% endif %}</span>
+            <h2 class="card-title">{% if is_profile %}Manage profile{% else %}Friend status{% endif %}</h2>
 
             <div class="stack">
                 {% if is_profile %}
                     <a class="btn btn-primary" href="{% url 'edit_profile' %}">Edit profile</a>
-                    <a class="btn btn-secondary" href="{% url 'search' %}">Find more hikers</a>
+                    <a class="btn btn-secondary" href="{% url 'password_change' %}">Change password</a>
+                    <a class="btn btn-outline" href="{% url 'search' %}">Find hikers</a>
                 {% else %}
                     {% if not is_friend and not has_sent_request and not has_received_request %}
                         <form method="post" action="{% url 'send_friend_request' profile_user.id %}">
@@ -77,7 +82,7 @@
                         </form>
                     {% elif has_received_request %}
                         <div class="notice">
-                            <p>This user already sent you a request. Review it from your own profile page.</p>
+                            <p>Request received from this user.</p>
                         </div>
                         <a class="btn btn-outline" href="{% url 'detail_user' request.user.id %}">Open my requests</a>
                     {% endif %}
@@ -87,50 +92,8 @@
         </aside>
     </section>
 
-    <section class="section content-grid">
-        <article class="card">
-            <span class="eyebrow">Profile details</span>
-            <h2 class="section-title">About {{ profile_user.name|default:profile_user.username }}</h2>
-            <div class="meta-grid">
-                <div class="meta-item">
-                    <span class="meta-label">Username</span>
-                    <strong>@{{ profile_user.username }}</strong>
-                </div>
-                <div class="meta-item">
-                    <span class="meta-label">Location</span>
-                    <strong>{{ profile_user.location|default:"Not listed" }}</strong>
-                </div>
-                <div class="meta-item">
-                    <span class="meta-label">Experience</span>
-                    <strong>{{ profile_user.get_experience_level_display }}</strong>
-                </div>
-                <div class="meta-item">
-                    <span class="meta-label">Pace</span>
-                    <strong>{{ profile_user.get_pace_display }}</strong>
-                </div>
-            </div>
-        </article>
-
-        {% if is_profile %}
-            <article class="card">
-                <span class="eyebrow eyebrow--warm">Friend summary</span>
-                <h2 class="card-title">Your network at a glance</h2>
-                <div class="stack">
-                    <div class="meta-item">
-                        <span class="meta-label">Incoming requests</span>
-                        <strong>{{ incoming_requests|length }}</strong>
-                    </div>
-                    <div class="meta-item">
-                        <span class="meta-label">Outgoing requests</span>
-                        <strong>{{ outgoing_requests|length }}</strong>
-                    </div>
-                    <div class="meta-item">
-                        <span class="meta-label">Friends</span>
-                        <strong>{{ friends|length }}</strong>
-                    </div>
-                </div>
-            </article>
-        {% else %}
+    {% if not is_profile %}
+        <section class="section">
             <article class="card">
                 <span class="eyebrow eyebrow--warm">Mutuals</span>
                 <h2 class="card-title">Shared connections</h2>
@@ -148,12 +111,11 @@
                 {% else %}
                     <div class="empty-state">
                         <h3 class="card-title">No mutual friends yet.</h3>
-                        <p>Connections will appear here once you overlap through the network.</p>
                     </div>
                 {% endif %}
             </article>
-        {% endif %}
-    </section>
+        </section>
+    {% endif %}
 
     {% if is_profile %}
         <section class="section">
@@ -161,7 +123,6 @@
                 <div>
                     <span class="eyebrow">Friend requests</span>
                     <h2 class="section-title">Incoming requests</h2>
-                    <p class="section-subtitle">Accept or decline new connections from one place.</p>
                 </div>
             </div>
 
@@ -189,7 +150,6 @@
             {% else %}
                 <div class="empty-state">
                     <h3 class="card-title">No incoming requests.</h3>
-                    <p>New connection requests will show up here when other hikers reach out.</p>
                 </div>
             {% endif %}
         </section>
@@ -204,20 +164,20 @@
                             <li class="resource-item">
                                 <div>
                                     <a class="person-link" href="{% url 'detail_user' friendship.addressee.id %}">{{ friendship.addressee.name|default:friendship.addressee.username }}</a>
-                                    <p class="supporting-copy">Waiting for a response from @{{ friendship.addressee.username }}</p>
+                                    <p class="supporting-copy">@{{ friendship.addressee.username }}</p>
                                 </div>
                                 <span class="status-pill status-pill--pending">Pending</span>
                             </li>
                         {% endfor %}
                     </ul>
                 {% else %}
-                    <p class="supporting-copy">You do not have any outgoing friend requests right now.</p>
+                    <p class="supporting-copy">No outgoing requests.</p>
                 {% endif %}
             </article>
 
             <article class="card">
                 <span class="eyebrow">Friends</span>
-                <h2 class="card-title">Your current network</h2>
+                <h2 class="card-title">Your network</h2>
                 {% if friends %}
                     <ul class="resource-list">
                         {% for friend in friends %}
@@ -230,7 +190,7 @@
                         {% endfor %}
                     </ul>
                 {% else %}
-                    <p class="supporting-copy">You have not connected with any hikers yet.</p>
+                    <p class="supporting-copy">No friends yet.</p>
                 {% endif %}
             </article>
         </section>

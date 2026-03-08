@@ -5,9 +5,8 @@
 {% block content %}
     <section class="search-layout">
         <article class="form-card">
-            <span class="eyebrow">Discover</span>
-            <h1 class="form-title">Search hikes and people</h1>
-            <p class="supporting-copy">Use the shared filters below to switch between public hike discovery and social profile browsing without losing the clean mobile-first flow.</p>
+            <span class="eyebrow">Search</span>
+            <h1 class="form-title">Hikes and people</h1>
 
             <form method="get" class="form-layout">
                 {{ form.tab }}
@@ -72,15 +71,8 @@
         </article>
 
         <aside class="panel">
-            <span class="eyebrow eyebrow--warm">Search mode</span>
-            <h2 class="card-title">{% if tab == "hikes" %}Find the right route{% else %}Find the right crew{% endif %}</h2>
-            <p class="card-copy">
-                {% if tab == "hikes" %}
-                    Narrow hike results by pace, experience, date, and mileage to quickly surface the most relevant outings.
-                {% else %}
-                    Browse profiles outside your existing friend circle and filter by pace, experience, location, or age range.
-                {% endif %}
-            </p>
+            <span class="eyebrow eyebrow--warm">Mode</span>
+            <h2 class="card-title">{% if tab == "hikes" %}Hike filters{% else %}People filters{% endif %}</h2>
         </aside>
     </section>
 
@@ -89,7 +81,7 @@
             <div>
                 <span class="eyebrow">Results</span>
                 <h2 class="section-title">{% if tab == "hikes" %}Hike matches{% else %}People matches{% endif %}</h2>
-                <p class="section-subtitle">{% if query %}Showing results for "{{ query }}".{% else %}Showing recent suggestions to get you started.{% endif %}</p>
+                <p class="section-subtitle">{% if query %}"{{ query }}"{% else %}Recent results{% endif %}</p>
             </div>
         </div>
 
@@ -103,8 +95,7 @@
             {% else %}
                 <div class="empty-state">
                     <span class="eyebrow eyebrow--warm">No hike matches</span>
-                    <h3 class="card-title">Try widening the filters.</h3>
-                    <p>Adjust pace, date, or mileage to surface more hikes from your network and public listings.</p>
+                    <h3 class="card-title">Try wider filters.</h3>
                 </div>
             {% endif %}
         {% else %}
@@ -150,8 +141,7 @@
             {% else %}
                 <div class="empty-state">
                     <span class="eyebrow eyebrow--warm">No people matches</span>
-                    <h3 class="card-title">Try a broader profile search.</h3>
-                    <p>Remove one or two filters to surface more hikers outside your current friend list.</p>
+                    <h3 class="card-title">Try wider filters.</h3>
                 </div>
             {% endif %}
         {% endif %}

@@ -6,7 +6,7 @@
                     <span class="brand-mark">TC</span>
                     <span class="brand-copy">
                         <strong>TrailCircle</strong>
-                        <span>Hikes, friends, and ride boards</span>
+                        <span>Hikes and crews</span>
                     </span>
                 </a>
 
@@ -18,7 +18,7 @@
                     <div class="nav-cluster">
                         <nav class="primary-nav" id="primary-nav" data-nav-menu>
                             <a class="nav-link {% if url_name == 'home' %}is-active{% endif %}" href="{% url 'home' %}">Home</a>
-                            <a class="nav-link {% if url_name == 'search' %}is-active{% endif %}" href="{% url 'search' %}">Discover</a>
+                            <a class="nav-link {% if url_name == 'search' %}is-active{% endif %}" href="{% url 'search' %}">Search</a>
                             <a class="nav-link {% if url_name == 'create_event' %}is-active{% endif %}" href="{% url 'create_event' %}">Create hike</a>
                             <a class="nav-link {% if url_name == 'notifications' %}is-active{% endif %}" href="{% url 'notifications' %}">Notifications</a>
                             <a class="nav-link {% if url_name == 'detail_user' or url_name == 'edit_profile' or url_name == 'password_change' or url_name == 'password_change_done' %}is-active{% endif %}" href="{% url 'detail_user' user.id %}">Profile</a>
@@ -58,7 +58,7 @@
             </a>
             <a class="mobile-nav__item {% if url_name == 'search' %}is-active{% endif %}" href="{% url 'search' %}">
                 <strong>Search</strong>
-                <span>Discover</span>
+                <span>Browse</span>
             </a>
             <a class="mobile-nav__item {% if url_name == 'create_event' %}is-active{% endif %}" href="{% url 'create_event' %}">
                 <strong>Create</strong>

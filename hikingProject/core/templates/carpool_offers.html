@@ -7,7 +7,7 @@
         <article class="hero-card hero-card--dark">
             <span class="eyebrow">Ride board</span>
             <h1 class="hero-title">Carpools for {{ hike.title }}</h1>
-            <p>Keep transportation planning inside the hike flow so participants can join, approve, and coordinate rides without leaving the product.</p>
+            <p>Ride offers and requests for this hike.</p>
             <div class="detail-stat-grid">
                 <div class="detail-stat">
                     <span class="meta-label">Hike</span>
@@ -32,7 +32,7 @@
 
         <aside class="panel">
             <span class="eyebrow eyebrow--warm">Overview</span>
-            <h2 class="card-title">Current ride options</h2>
+            <h2 class="card-title">Ride status</h2>
             <div class="stack">
                 <div class="meta-item">
                     <span class="meta-label">Offers</span>
@@ -125,7 +125,6 @@
                             {% else %}
                                 <div class="empty-state">
                                     <h3 class="card-title">No ride requests yet.</h3>
-                                    <p>Requests will appear here as participants ask to join this carpool.</p>
                                 </div>
                             {% endif %}
                         </div>
@@ -163,7 +162,6 @@
             <div class="empty-state">
                 <span class="eyebrow eyebrow--warm">No ride offers yet</span>
                 <h3 class="card-title">Be the first driver for this hike.</h3>
-                <p>Create a carpool offer so riders can request seats directly from the hike page.</p>
                 {% if not user_offer %}
                     <div class="hero-actions justify-center">
                         <a class="btn btn-primary" href="{% url 'offer_carpool' hike.id %}">Offer a carpool</a>

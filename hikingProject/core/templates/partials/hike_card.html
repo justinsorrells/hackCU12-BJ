@@ -13,9 +13,7 @@
         <a href="{% url 'detail_hike' hike.id %}">{{ hike.title }}</a>
     </h3>
 
-    <p class="card-copy">
-        {{ hike.description|default:"Lock in the route, share the details, and keep the group coordinated from one place."|truncatechars:140 }}
-    </p>
+    <p class="card-copy">{{ hike.description|default:"No description yet."|truncatechars:140 }}</p>
 
     <div class="meta-grid">
         <div class="meta-item">

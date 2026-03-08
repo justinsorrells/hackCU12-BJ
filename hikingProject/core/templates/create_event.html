@@ -7,7 +7,6 @@
         <article class="form-card">
             <span class="eyebrow">Plan a hike</span>
             <h1 class="form-title">Create a new hiking event</h1>
-            <p class="supporting-copy">Build a clean event page with route details, difficulty expectations, and the information participants need before requesting to join.</p>
 
             <form method="post" enctype="multipart/form-data" class="form-layout">
                 {% csrf_token %}
@@ -20,20 +19,20 @@
         </article>
 
         <aside class="panel">
-            <span class="eyebrow eyebrow--warm">What stands out</span>
-            <h2 class="card-title">A strong event page feels effortless.</h2>
+            <span class="eyebrow eyebrow--warm">Checklist</span>
+            <h2 class="card-title">Before you publish</h2>
             <div class="stack">
                 <div class="meta-item">
                     <span class="meta-label">Visibility</span>
-                    <strong>Choose public hikes for discovery or friends-only for tighter coordination.</strong>
+                    <strong>Public or friends-only</strong>
                 </div>
                 <div class="meta-item">
                     <span class="meta-label">Route sharing</span>
-                    <strong>Attach a GPX file to make the detail page feel richer in demos.</strong>
+                    <strong>Add GPX if you have it</strong>
                 </div>
                 <div class="meta-item">
-                    <span class="meta-label">Descriptions</span>
-                    <strong>Set expectations early so join requests and carpools are more relevant.</strong>
+                    <span class="meta-label">Description</span>
+                    <strong>Include key trip details</strong>
                 </div>
             </div>
         </aside>

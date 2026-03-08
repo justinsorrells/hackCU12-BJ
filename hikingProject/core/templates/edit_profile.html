@@ -7,7 +7,6 @@
         <article class="form-card">
             <span class="eyebrow">Profile settings</span>
             <h1 class="form-title">Edit your profile</h1>
-            <p class="supporting-copy">Keep your hiking preferences accurate so your profile feels trustworthy across event discovery, friendships, and carpools.</p>
 
             <form method="post" enctype="multipart/form-data" class="form-layout">
                 {% csrf_token %}
@@ -41,7 +40,7 @@
 
             <article class="panel">
                 <span class="eyebrow">Account settings</span>
-                <h2 class="card-title">Security and account actions</h2>
+                <h2 class="card-title">Account</h2>
                 <div class="stack">
                     <a class="btn btn-secondary" href="{% url 'password_change' %}">Change password</a>
                     <form method="post" action="{% url 'delete_account' %}">
