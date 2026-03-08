@@ -437,7 +437,7 @@ def remove_friend(request, user_id):
 def delete_hike(request, hike_id):
     hike = get_object_or_404(HikingEvent, id=hike_id)
     if hike.organizer != request.user:
-        return redirect("detail_hike", hike_id=hike.id)
+        return redirect("detail_hike", hike_id=hike_id)
     if request.method == "POST":
         hike.delete()
         return redirect("home")
