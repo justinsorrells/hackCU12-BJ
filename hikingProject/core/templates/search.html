@@ -31,6 +31,19 @@
         padding: 12px 0;
         border-top: 1px solid #ddd;
     }
+
+    .filters {
+        margin-top: 12px;
+        margin-bottom: 12px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .filters select,
+    .filters input {
+        padding: 6px;
+    }
 </style>
 
 <div class="search-box">
@@ -38,7 +51,28 @@
 
     <form method="get">
         {{ form.q }}
-        <input type="hidden" name="tab" value="{{ tab }}">
+        {{ form.tab }}
+
+        {% if tab == "hikes" %}
+            <div class="filters">
+                {{ form.pace }}
+                {{ form.experience }}
+                {{ form.date }}
+                {{ form.max_mileage }}
+            </div>
+        {% endif %}
+
+        {% if tab == "users" %}
+            <div class="filters">
+                {{ form.location }}
+                {{ form.gender }}
+                {{ form.min_age }}
+                {{ form.max_age }}
+                {{ form.user_experience }}
+                {{ form.user_pace }}
+            </div>
+        {% endif %}
+
         <button type="submit">Search</button>
     </form>
 
@@ -60,7 +94,7 @@
                 <strong>{{ hike.title }}</strong><br>
                 {{ hike.location }}<br>
                 {{ hike.date }} at {{ hike.time }}<br>
-		        <a href="{% url 'detail_hike' hike.id%}">Hike Details</a>
+                <a href="{% url 'detail_hike' hike.id %}">Hike Details</a>
             </div>
         {% empty %}
             <p>No hikes found.</p>

@@ -21,6 +21,7 @@ class Command(BaseCommand):
                 gender=choice(["M", "F", "N"]),
                 experience_level=choice(["B", "I", "A"]),
                 pace=choice(["S", "M", "F"]),
+                age=randint(18, 60),
             )
             users.append(user)
 

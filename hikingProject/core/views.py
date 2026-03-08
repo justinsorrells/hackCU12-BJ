@@ -34,9 +34,19 @@ def register_view(request):
         form = RegisterForm()
     return render(request, "registration/register.html", {"form": form})
 
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+from django.shortcuts import render
+from django.utils import timezone
+
+from .forms import SearchForm
+from .models import Friendship, HikingEvent, User
+
+
 @login_required
 def search_view(request):
     form = SearchForm(request.GET or None)
+
     friendships = Friendship.objects.filter(
         Q(requester=request.user, status="accepted") |
         Q(addressee=request.user, status="accepted")
@@ -48,38 +58,103 @@ def search_view(request):
             friend_ids.add(friendship.addressee_id)
         else:
             friend_ids.add(friendship.requester_id)
-            
-    hikes = HikingEvent.objects.filter(
-        Q(visibility="public") |
-        Q(visibility="friends", organizer_id__in=friend_ids) |
-        Q(organizer=request.user),
-        date__gte=timezone.now().date(),
-    ).order_by("date", "time").distinct()[:10]
-
-    users = User.objects.exclude(
-        Q(id=request.user.id) |
-        Q(id__in=friend_ids)
-    ).order_by("?")[:10]
 
     query = ""
     tab = "hikes"
 
+    hikes = HikingEvent.objects.none()
+    users = User.objects.none()
+
     if form.is_valid():
-        query = form.cleaned_data.get("q", "")
+        query = form.cleaned_data.get("q", "").strip()
         tab = form.cleaned_data.get("tab") or "hikes"
 
-        if query:
+        if tab == "hikes":
             hikes = HikingEvent.objects.filter(
+                Q(visibility="public") |
+                Q(visibility="friends", organizer_id__in=friend_ids) |
+                Q(organizer=request.user),
+                date__gte=timezone.now().date(),
+            ).order_by("date", "time").distinct()
+
+            if query:
+                hikes = hikes.filter(
                     Q(location__icontains=query) |
                     Q(description__icontains=query) |
                     Q(title__icontains=query)
-                    ).distinct()
+                )
 
-            users = User.objects.filter(
+            pace = form.cleaned_data.get("pace")
+            experience = form.cleaned_data.get("experience")
+            date = form.cleaned_data.get("date")
+            max_mileage = form.cleaned_data.get("max_mileage")
+
+            if pace:
+                hikes = hikes.filter(pace=pace)
+
+            if experience:
+                hikes = hikes.filter(recommended_experience_level=experience)
+
+            if date:
+                hikes = hikes.filter(date=date)
+
+            if max_mileage is not None:
+                hikes = hikes.filter(mileage__lte=max_mileage)
+
+            hikes = hikes[:10]
+
+        else:
+            users = User.objects.exclude(
+                Q(id=request.user.id) |
+                Q(id__in=friend_ids)
+            ).distinct()
+
+            if query:
+                users = users.filter(
                     Q(username__icontains=query) |
                     Q(name__icontains=query) |
                     Q(location__icontains=query)
-                    ).exclude(id=request.user.id).distinct()
+                )
+
+            location = form.cleaned_data.get("location")
+            gender = form.cleaned_data.get("gender")
+            min_age = form.cleaned_data.get("min_age")
+            max_age = form.cleaned_data.get("max_age")
+            user_experience = form.cleaned_data.get("user_experience")
+            user_pace = form.cleaned_data.get("user_pace")
+
+            if location:
+                users = users.filter(location__icontains=location)
+
+            if gender:
+                users = users.filter(gender=gender)
+
+            if min_age is not None:
+                users = users.filter(age__gte=min_age)
+
+            if max_age is not None:
+                users = users.filter(age__lte=max_age)
+
+            if user_experience:
+                users = users.filter(experience_level=user_experience)
+
+            if user_pace:
+                users = users.filter(preferred_pace=user_pace)
+
+            users = users[:10]
+
+    else:
+        hikes = HikingEvent.objects.filter(
+            Q(visibility="public") |
+            Q(visibility="friends", organizer_id__in=friend_ids) |
+            Q(organizer=request.user),
+            date__gte=timezone.now().date(),
+        ).order_by("date", "time").distinct()[:10]
+
+        users = User.objects.exclude(
+            Q(id=request.user.id) |
+            Q(id__in=friend_ids)
+        ).distinct()[:10]
 
     return render(request, "search.html", {
         "form": form,
@@ -87,7 +162,7 @@ def search_view(request):
         "tab": tab,
         "hikes": hikes,
         "users": users,
-        })
+    })
 
 @login_required
 def create_event(request):

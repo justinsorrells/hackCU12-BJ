@@ -74,6 +74,7 @@ Profile
     <p><strong>Gender:</strong> {{ profile_user.get_gender_display }}</p>
     <p><strong>Experience Level:</strong> {{ profile_user.get_experience_level_display }}</p>
     <p><strong>Pace:</strong> {{ profile_user.get_pace_display }}</p>
+	<p><strong>Age:</strong> {{ profile_user.age }}</p>
 
     {% if request.user == profile_user %}
         <a href="{% url 'edit_profile' %}">Edit Profile</a>

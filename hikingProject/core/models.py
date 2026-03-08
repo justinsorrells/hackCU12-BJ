@@ -24,6 +24,7 @@ class User(AbstractUser):
     experience_level = models.CharField(max_length=1, choices=EXPERIENCE_LEVEL)
     profile_picture = models.ImageField(upload_to="profiles/", blank=True, null=True)
     pace = models.CharField(max_length=1, choices=PACE)
+    age = models.IntegerField(null=True, blank=True)
 
 class Friendship(models.Model):
     STATUS_CHOICES = [

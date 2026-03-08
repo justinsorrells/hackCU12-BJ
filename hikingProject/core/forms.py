@@ -91,6 +91,10 @@ class HikingEventForm(forms.ModelForm):
             raise forms.ValidationError("Must choose future date")
         return date
     
+from django import forms
+from .models import HikingEvent
+
+
 class SearchForm(forms.Form):
     TAB_CHOICES = [
         ("hikes", "Hikes"),
@@ -102,10 +106,71 @@ class SearchForm(forms.Form):
         label="",
         widget=forms.TextInput(attrs={"placeholder": "Search..."})
     )
+
     tab = forms.ChoiceField(
         choices=TAB_CHOICES,
         required=False,
         widget=forms.HiddenInput()
+    )
+
+    pace = forms.ChoiceField(
+        required=False,
+        choices=[("", "Any pace")] + list(HikingEvent.PACES)
+    )
+
+    experience = forms.ChoiceField(
+        required=False,
+        choices=[("", "Any experience")] + list(HikingEvent.EXPERIENCE_LEVELS)
+    )
+
+    date = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"})
+    )
+
+    max_mileage = forms.FloatField(
+        required=False,
+        widget=forms.NumberInput(attrs={
+            "placeholder": "Max mileage",
+            "step": "0.1",
+            "min": "0",
+        })
+    )
+
+    location = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={"placeholder": "Location"})
+    )
+
+    gender = forms.ChoiceField(
+        required=False,
+        choices=[("", "Any gender")] + list(User.GENDER)
+    )
+
+    min_age = forms.IntegerField(
+        required=False,
+        widget=forms.NumberInput(attrs={
+            "placeholder": "Min age",
+            "min": "0",
+        })
+    )
+
+    max_age = forms.IntegerField(
+        required=False,
+        widget=forms.NumberInput(attrs={
+            "placeholder": "Max age",
+            "min": "0",
+        })
+    )
+
+    user_experience = forms.ChoiceField(
+        required=False,
+        choices=[("", "Any experience")] + list(User.EXPERIENCE_LEVEL)
+    )
+
+    user_pace = forms.ChoiceField(
+        required=False,
+        choices=[("", "Any pace")] + list(User.PACE)
     )
 
 class EditProfileForm(forms.ModelForm):
