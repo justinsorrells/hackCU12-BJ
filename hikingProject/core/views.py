@@ -184,3 +184,13 @@ def delete_account(request):
         return redirect("register")
 
     return redirect("edit_profile")
+
+@login_required
+def delete_hike(request, hike_id):
+    hike = get_object_or_404(HikingEvent, id=hike_id)
+    if hike.organizer != request.user:
+        return redirect("detail_hike", hike_id=hike.id)
+    if request.method == "POST":
+        hike.delete()
+        return redirect("home")
+    return redirect("detail_hike", hike_id=hike_id)
