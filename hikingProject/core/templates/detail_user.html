@@ -78,6 +78,17 @@ Profile
     {% if request.user == profile_user %}
         <a href="{% url 'edit_profile' %}">Edit Profile</a>
     {% elif request.user != profile_user %}
+	<h2>Mutual Friends</h2>
+	    {% for friend in mutual_friends %}
+		<div>
+		    <a href="{% url 'detail_user' friend.id %}">
+			{{ friend.username }}
+		    </a>
+		</div>
+	    {% empty %}
+		<p>No mutual friends yet.</p>
+	    {% endfor %}
+
     	<a href="{% url 'report_user' profile_user.id %}">Report Profile</a>
     {% endif %}
 

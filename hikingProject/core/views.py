@@ -37,7 +37,6 @@ def register_view(request):
 @login_required
 def search_view(request):
     form = SearchForm(request.GET or None)
-
     friendships = Friendship.objects.filter(
         Q(requester=request.user, status="accepted") |
         Q(addressee=request.user, status="accepted")
@@ -220,7 +219,7 @@ def detail_user(request, user_id):
     is_friend = False
     has_sent_request = False
     has_received_request = False
-    context = {}
+    context = { "profile_user": user}
     if request.user != user:
         is_friend = Friendship.objects.filter(
                 Q(requester=request.user, addressee=user) |
@@ -239,16 +238,39 @@ def detail_user(request, user_id):
                 addressee=request.user,
                 status="pending",
                 ).exists()
+        my_friendships = Friendship.objects.filter(
+            Q(requester=request.user) | Q(addressee=request.user),
+            status="accepted",
+        )
+        my_friend_ids = set()
+        for friendship in my_friendships:
+            if friendship.requester_id == request.user.id:
+                my_friend_ids.add(friendship.addressee_id)
+            else:
+                my_friend_ids.add(friendship.requester_id)
+        # friends of profile user
+        profile_friendships = Friendship.objects.filter(
+            Q(requester=user) | Q(addressee=user),
+            status="accepted",
+        )
 
-        context = {
-                "profile_user": user,
-                "is_friend": is_friend,
-                "has_sent_request": has_sent_request,
-                "has_received_request": has_received_request,
-                "is_profile": False,
-                }
+        profile_friend_ids = set()
+        for friendship in profile_friendships:
+            if friendship.requester_id == user.id:
+                profile_friend_ids.add(friendship.addressee_id)
+            else:
+                profile_friend_ids.add(friendship.requester_id)
 
-    elif request.user == user:
+        mutual_friend_ids = my_friend_ids & profile_friend_ids
+        mutual_friends = User.objects.filter(id__in=mutual_friend_ids)
+        context["mutual_friends"] = mutual_friends
+        context["is_profile"] = False
+
+    context["is_friend"] = is_friend
+    context["has_sent_request"] = has_sent_request
+    context["has_received_request"] = has_received_request
+
+    if request.user == user:
         accepted_friendships = Friendship.objects.filter(
                 Q(requester=request.user) | Q(addressee=request.user),
                 status="accepted",
@@ -264,22 +286,14 @@ def detail_user(request, user_id):
                 friends.append(friendship.addressee)
             else:
                 friends.append(friendship.requester)
-
-        context = {
-                "profile_user": user,
-                "is_friend": is_friend,
-                "has_sent_request": has_sent_request,
-                "has_received_request": has_received_request,
-                "friends": friends,
-                "incoming_requests": incoming_requests,
-                "is_profile": True,
-                }
+        context["friends"] = friends
+        context["incoming_requests"] = incoming_requests
+        context["is_profile"] = True
     return render(request, "detail_user.html", context)
 
 @login_required
 def delete_account(request):
     if request.method == "POST":
-        user = request.user
         logout(request)
         user.delete()
         return redirect("register")
