@@ -26,4 +26,5 @@ urlpatterns = [
     path("delete_hike/<int:hike_id>/", views.delete_hike, name="delete_hike"),
     path("user/<int:user_id>/report/", views.report_user, name="report_user"),
     path("hike/<int:hike_id>/leave/", views.leave_hike, name="leave_hike"),
+    path( "hikes/<int:hike_id>/remove-participant/<int:user_id>/",views.remove_participant, name="remove_participant",)
 ]

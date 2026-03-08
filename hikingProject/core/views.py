@@ -150,7 +150,11 @@ def detail_hike(request, hike_id):
             user=request.user,
             status="rejected",
             ).exists()
-    return render(request, "detail_hike.html", {"hike": hike, "has_pending_request": has_pending_request, "is_participant": is_participant, "has_been_rejected": has_been_rejected, "qr_code": qr_base64})
+    accepted_users = User.objects.filter(
+        event_join_requests__event=hike,
+        event_join_requests__status="approved",
+    )
+    return render(request, "detail_hike.html", {"accepted_users": accepted_users, "hike": hike, "has_pending_request": has_pending_request, "is_participant": is_participant, "has_been_rejected": has_been_rejected, "qr_code": qr_base64})
 
 @login_required
 def leave_hike(request, hike_id):
@@ -476,3 +480,25 @@ def report_user(request, user_id):
         "reported_user": reported_user,
     })
 
+@login_required
+def remove_participant(request, hike_id, user_id):
+    if request.method != "POST":
+        return redirect("detail_hike", hike_id=hike_id)
+
+    hike = get_object_or_404(HikingEvent, id=hike_id)
+
+    if hike.organizer != request.user:
+        return redirect("detail_hike", hike_id=hike_id)
+
+    participant = get_object_or_404(User, id=user_id)
+
+    join_request = get_object_or_404(
+        EventJoinRequest,
+        event=hike,
+        user=participant,
+        status="approved",
+    )
+
+    join_request.delete()
+
+    return redirect("detail_hike", hike_id=hike_id)

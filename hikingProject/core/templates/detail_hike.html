@@ -62,7 +62,16 @@ Home
 		<p><strong>Share With QR Code:</strong></p>
 		<img src="data:image/png;base64,{{ qr_code }}" alt="QR Code">
 	{% endif %}
-
+	<p><strong>Participants:</strong></p><br>
+	{% for p in accepted_users %}
+		{{ p.username }}	
+		{% if request.user == hike.organizer %}
+			<form method="post" action="{% url 'remove_participant' hike.id p.id %}">
+			    {% csrf_token %}
+			    <button type="submit">Remove Participant</button>
+			</form>
+		{% endif %}<br>
+	{% endfor %}
 	{% if is_participant %}
 		<p>You are a participant in this hike.</p>
 	{% elif has_been_rejected %}
