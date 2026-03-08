@@ -30,6 +30,7 @@ staticfiles/
 .DS_Store
 Thumbs.db
 Makefile
+*.swp
 
 # Python builds
 build/
