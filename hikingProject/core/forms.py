@@ -115,3 +115,14 @@ class EditProfileForm(forms.ModelForm):
             "profile_picture",
             "pace",
         )
+
+class ReportUserForm(forms.Form):
+    reason = forms.ChoiceField(choices=[
+        ("harassment", "Harassment"),
+        ("fake", "Fake Account"),
+        ("other", "Other"),
+    ])
+    details = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 4})
+    )

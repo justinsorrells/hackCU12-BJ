@@ -24,4 +24,5 @@ urlpatterns = [
     path("friends/decline/<int:friendship_id>/", views.decline_friend_request, name="decline_friend_request"),
     path("friends/remove/<int:user_id>/", views.remove_friend, name="remove_friend"),
     path("delete_hike/<int:hike_id>/", views.delete_hike, name="delete_hike"),
+    path("user/<int:user_id>/report/", views.report_user, name="report_user"),
 ]

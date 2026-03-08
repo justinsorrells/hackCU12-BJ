@@ -77,6 +77,8 @@ Profile
 
     {% if request.user == profile_user %}
         <a href="{% url 'edit_profile' %}">Edit Profile</a>
+    {% elif request.user != profile_user %}
+    	<a href="{% url 'report_user' profile_user.id %}">Report Profile</a>
     {% endif %}
 
 {% endblock %}

@@ -5,6 +5,7 @@ from io import BytesIO
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
+from django.core.mail import send_mail
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 import qrcode
@@ -409,3 +410,41 @@ def delete_hike(request, hike_id):
         hike.delete()
         return redirect("home")
     return redirect("detail_hike", hike_id=hike_id)
+
+@login_required
+def report_user(request, user_id):
+    reported_user = get_object_or_404(User, id=user_id)
+    if reported_user == request.user:
+        return redirect("detail_user", user_id=user_id)
+
+    if request.method == "POST":
+        form = ReportUserForm(request.POST)
+        if form.is_valid():
+            reason = form.cleaned_data["reason"]
+            details = form.cleaned_data["details"]
+
+            subject = f"User Report: {reported_user.username}"
+            message = (
+                f"Reporter: {request.user.username} (id={request.user.id})\n"
+                f"Reported user: {reported_user.username} (id={reported_user.id})\n"
+                f"Reason: {reason}\n\n"
+                f"Details:\n{details}"
+            )
+
+            send_mail(
+                subject,
+                message,
+                None,  # uses DEFAULT_FROM_EMAIL
+                ["justinwsorrells@gmail.com", "benjaminmst@gmail.com"],
+                fail_silently=False,
+            )
+
+            return redirect("detail_user", user_id=user_id)
+    else:
+        form = ReportUserForm()
+
+    return render(request, "report_user.html", {
+        "form": form,
+        "reported_user": reported_user,
+    })
+
