@@ -86,3 +86,20 @@ class HikingEventForm(forms.ModelForm):
         if date.year < today.year or (date.year == today.year and date.month < today.month) or (date.year == today.year and date.month == today.month and date.day < today.day):
             raise forms.ValidationError("Must choose future date")
         return date
+    
+class SearchForm(forms.Form):
+    TAB_CHOICES = [
+        ("hikes", "Hikes"),
+        ("users", "Users"),
+    ]
+
+    q = forms.CharField(
+        required=False,
+        label="",
+        widget=forms.TextInput(attrs={"placeholder": "Search..."})
+    )
+    tab = forms.ChoiceField(
+        choices=TAB_CHOICES,
+        required=False,
+        widget=forms.HiddenInput()
+    )

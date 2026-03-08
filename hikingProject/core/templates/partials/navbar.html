@@ -2,7 +2,7 @@
 
     <div>
         <a href="{% url 'home' %}" style="color:white; margin-right:20px;">Home</a>
-        <a href="" style="color:white; margin-right:20px;">Search</a>
+        <a href="{% url 'search' %}" style="color:white; margin-right:20px;">Search</a>
 
         {% if user.is_authenticated %}
 	<a href="{% url 'create_event' %}" style="color:white;">Create</a>
