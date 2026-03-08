@@ -101,11 +101,9 @@ def edit_hike(request, hike_id):
         })
 
 @login_required
-<<<<<<< HEAD
 def detail_hike(request, hike_id):
     hike = get_object_or_404(HikingEvent, id=hike_id)
     return render(request, "detail_hike.html", {"hike": hike})
-=======
 def edit_profile(request):
     if request.method == "POST":
         form = EditProfileForm(request.POST, request.FILES, instance=request.user)
@@ -118,4 +116,3 @@ def edit_profile(request):
     return render(request, "edit_profile.html", {
         "form": form,
         })
->>>>>>> main
