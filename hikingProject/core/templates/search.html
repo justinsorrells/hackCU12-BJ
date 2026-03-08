@@ -70,7 +70,7 @@
             <div class="result">
                 <strong>{{ user.name }}</strong><br>
                 @{{ user.username }}<br>
-                {{ user.location }}
+                {{ user.location }}<br>
                 <a href="{% url 'detail_user' user.id %}">View Profile</a>
             </div>
         {% empty %}
