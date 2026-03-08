@@ -83,6 +83,6 @@ class HikingEventForm(forms.ModelForm):
     def clean_date(self):
         date = self.cleaned_data.get("date") 
         today = dt.date.today()
-        if date.year < today.year or date.month < today.month or (date.month == today.month and date.day < today.day):
+        if date.year < today.year or (date.year == today.year and date.month < today.month) or (date.year == today.year and date.month == today.month and date.day < today.day):
             raise forms.ValidationError("Must choose future date")
         return date
