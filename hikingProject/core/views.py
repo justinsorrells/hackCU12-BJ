@@ -1,15 +1,19 @@
+import base64
+from io import BytesIO
+from urllib import request
+
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+import qrcode
 from .models import *
 from .forms import *
 
 # Create your views here.
 @login_required
 def home(request):
-
     events = HikingEvent.objects.filter(
             Q(organizer=request.user) |
             Q(join_requests__user=request.user,
@@ -103,6 +107,13 @@ def edit_hike(request, hike_id):
 @login_required
 def detail_hike(request, hike_id):
     hike = get_object_or_404(HikingEvent, id=hike_id)
+
+    url = request.build_absolute_uri(f"/hikes/{hike.id}/")
+    qr = qrcode.make(url)
+    buffer = BytesIO()
+    qr.save(buffer, format="PNG")
+    qr_base64 = base64.b64encode(buffer.getvalue()).decode()
+
     has_pending_request = False
     has_been_rejected = False
     is_participant = False
@@ -121,7 +132,7 @@ def detail_hike(request, hike_id):
             user=request.user,
             status="rejected",
     ).exists()
-    return render(request, "detail_hike.html", {"hike": hike, "has_pending_request": has_pending_request, "is_participant": is_participant, "has_been_rejected": has_been_rejected})
+    return render(request, "detail_hike.html", {"hike": hike, "has_pending_request": has_pending_request, "is_participant": is_participant, "has_been_rejected": has_been_rejected, "qr_code": qr_base64})
 
 @login_required
 def edit_profile(request):

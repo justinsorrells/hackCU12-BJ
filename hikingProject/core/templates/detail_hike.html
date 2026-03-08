@@ -52,6 +52,17 @@ Home
 		<p><strong>Max Participants:</strong> {{ hike.max_participants }}</p>
 	{% endif %}
 
+	<p><strong>Share With QR Code:</strong></p>
+	<img src="data:image/png;base64,{{ qr_code }}" alt="QR Code">
+
+	{% if is_participant %}
+		<p>You are a participant in this hike.</p>
+	{% elif has_been_rejected %}
+		<p>Your request to join this hike was rejected.</p>
+	{% elif has_pending_request %}
+		<p>Your request to join this hike is pending approval.</p>
+	{% endif %}
+
 	{% if request.user == hike.organizer %}
 		<a href="{% url 'edit_hike' hike.id %}">Edit hike</a>
 		<form method="post" action="{% url 'delete_hike' hike.id %}">
